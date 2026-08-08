@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<!-- Lets "Add to Home Screen" run full-screen like an app on iPad -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Farsi Friends" />
+<title>Farsi Friends</title>
+<style>
+  :root {
+    --sky: #8ed6ff;
+    --grass: #ffd36e;
+    --pink: #ff7eb6;
+    --purple: #9b6dff;
+    --green: #4cd964;
+    --card: #fffbe8;
+    --ink: #3a2a55;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%;
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, "Segoe UI", sans-serif;
+    color: var(--ink);
+    user-select: none; -webkit-user-select: none;
+    overflow: hidden;
+  }
+  body {
+    background: linear-gradient(180deg, var(--sky) 0%, #bdeaff 55%, var(--grass) 55%, #ffe39a 100%);
+    touch-action: manipulation;
+  }
+  button {
+    font-family: inherit; font-weight: 800; color: var(--ink);
+    border: none; border-radius: 28px; cursor: pointer;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.18); transition: transform .08s, box-shadow .08s;
+  }
+  button:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+
+  .screen { position: absolute; inset: 0; display: none; flex-direction: column;
+            align-items: center; justify-content: center; padding: 24px;
+            overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .screen.active { display: flex; }
+  /* Learn can hold many cards — let it grow & scroll from the top */
+  #learn { justify-content: flex-start; padding-bottom: 90px;
+           padding-top: calc(80px + env(safe-area-inset-top, 0px)); }
+
+  .mascot { width: 180px; height: 180px; transition: transform .25s; }
+  .mascot.happy { animation: bounce .5s ease 2; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-26px) scale(1.05)} }
+
+  /* Koochooloo rolls across the screen in her wheel (home) */
+  .roll-track { position: relative; width: 100%; max-width: 820px; height: 184px;
+    overflow: hidden; cursor: pointer; }
+  .roller { position: absolute; top: 14px; left: -170px; width: 160px; height: 160px;
+    animation: rollAcross 5.5s linear 2 forwards; }
+  /* after rolling across twice she parks in the middle and runs in place */
+  .roller.parked { left: 50%; transform: translateX(-50%); animation: none; }
+  .wheel { position: absolute; inset: 0; width: 160px; height: 160px;
+    animation: spin 1.4s linear infinite; }
+  #mascot-home { width: 104px; height: 104px; position: absolute; left: 28px; top: 28px;
+    z-index: 2; animation: runbob .4s ease-in-out infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes rollAcross { from { left: -170px; } to { left: 100%; } }
+  @keyframes runbob { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-5px); } }
+  #home-en { font-size: 16px; color: #5a4a75; margin: 2px 0 6px; font-weight: 800; }
+
+  .bubble {
+    background: #fff; border-radius: 22px; padding: 14px 22px; margin-bottom: 8px;
+    font-size: 30px; font-weight: 800; position: relative; box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    max-width: 80vw; text-align: center;
+  }
+  .bubble:after { content:""; position:absolute; bottom:-14px; left:50%; transform:translateX(-50%);
+    border:12px solid transparent; border-top-color:#fff; }
+
+  h1 { font-size: 38px; margin: 0 0 6px; text-shadow: 0 3px 0 rgba(255,255,255,.5); }
+  h2 { font-size: 30px; margin: 4px 0 14px; }
+
+  .big-btn { font-size: 30px; padding: 22px 40px; margin: 10px; min-width: 240px; }
+  .btn-pink   { background: var(--pink);   color:#fff; }
+  .btn-green  { background: var(--green);  color:#fff; }
+  .btn-purple { background: var(--purple); color:#fff; }
+
+  /* Theme picker tiles on the home screen */
+  .themes { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+  .theme-tile {
+    width: 200px; height: 200px; border-radius: 32px; background: var(--card);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+    box-shadow: 0 6px 0 rgba(0,0,0,.12);
+  }
+  .theme-tile .ico { font-size: 84px; line-height:1; }
+  .theme-tile .lbl { font-size: 24px; font-weight: 800; }
+
+  /* Fixed, not absolute: on Learn the screen itself scrolls, and an absolute
+     back button scrolled away with the cards. Only the active screen is
+     displayed, so its button is the only one on screen. */
+  .back {
+    position: fixed; font-size: 22px;
+    top:  calc(18px + env(safe-area-inset-top, 0px));
+    left: calc(18px + env(safe-area-inset-left, 0px));
+    padding: 12px 22px; background:#fff; z-index: 5;
+  }
+
+  #learn-content { width: 100%; max-width: 820px; }
+  .section-head {
+    font-size: 24px; font-weight: 800; color: var(--ink);
+    background: rgba(255,255,255,.75); border-radius: 18px;
+    padding: 8px 18px; margin: 22px 0 12px; box-shadow: 0 3px 0 rgba(0,0,0,.08);
+  }
+  .section-head:first-child { margin-top: 0; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+          width: 100%; max-width: 820px; }
+  @media (max-width: 600px){ .grid { grid-template-columns: repeat(2,1fr);} }
+  .card {
+    background: var(--card); border-radius: 28px; padding: 18px 10px; text-align:center;
+    box-shadow: 0 6px 0 rgba(0,0,0,.12); cursor: pointer; transition: transform .08s;
+  }
+  .card:active { transform: scale(.95); }
+  .card .emoji { font-size: 64px; line-height: 1; }
+  .card .fa { font-size: 30px; font-weight: 800; direction: rtl; margin-top: 6px; }
+  .card .tr { font-size: 18px; color: var(--purple); font-weight: 800; }
+  .card .en { font-size: 15px; color: #8a7aa5; }
+
+  .prompt-btn {
+    font-size: 26px; background: var(--purple); color:#fff; padding: 18px 30px; margin: 14px;
+  }
+  .choices { display:flex; gap: 20px; flex-wrap: wrap; justify-content:center; margin-top: 10px; }
+  .choice {
+    width: 150px; height: 150px; border-radius: 28px; background: var(--card);
+    font-size: 80px; box-shadow: 0 6px 0 rgba(0,0,0,.12);
+  }
+  .choice.wrong { animation: shake .4s; }
+  .choice.right { animation: pop .4s; background: #d6ffd9; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
+  @keyframes pop { 50%{ transform: scale(1.2);} }
+
+  /* Story / conversation stage */
+  .stage { display:flex; gap:40px; align-items:flex-end; margin:14px 0 18px; }
+  .actor { width:130px; height:130px; opacity:.4; transition: opacity .2s, transform .2s; }
+  .actor.speaking { opacity:1; transform: scale(1.15); }
+  .actor.happy { animation: bounce .5s ease 2; }
+  #story-en { font-size:18px; color:#5a4a75; min-height:22px; text-align:center; margin-bottom:4px; }
+  #feed-en { font-size:18px; color:#5a4a75; min-height:22px; text-align:center; }
+  #feed-meter { position:relative; width:280px; height:32px; background:#fff; border-radius:18px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,.15); overflow:hidden; margin:10px 0; }
+  #feed-fill { height:100%; width:0%; border-radius:18px; transition: width .45s ease;
+    background:linear-gradient(90deg,#7ed957,#ffd23f,#ff9b3f); }
+  #feed-meter-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:800; color:#3a2a55; }
+  #feed-hamster-wrap { display:inline-block; }
+  #feed-hamster-wrap.chomp { animation: chomp .4s ease; }
+  @keyframes chomp { 0%,100%{ transform: translateY(0); } 45%{ transform: translateY(-12px) scaleY(.9); } }
+  #feed-hamster { display:block; transition: transform .5s cubic-bezier(.34,1.56,.64,1); }  /* springy stretch as she grows */
+  .flying-food { position: fixed; z-index: 60; font-size: 64px; line-height: 1;
+    margin-left: -35px; margin-top: -35px; pointer-events: none;
+    animation: arc .65s ease-in forwards; }
+  @keyframes arc {
+    0%   { transform: translate(0,0) scale(1); opacity: 1; }
+    50%  { transform: translate(calc(var(--dx) * .5), calc(var(--dy) * .5 - 70px)) scale(.8); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: .15; }
+  }
+  #story-controls { display:flex; gap:14px; align-items:center; }
+  .choice-line { background: var(--card); border-radius:22px; padding:14px 22px; margin:6px;
+    min-width:240px; box-shadow:0 5px 0 rgba(0,0,0,.12); text-align:center; }
+  .choice-line .cl-fa { font-size:26px; font-weight:800; direction:rtl; }
+  .choice-line .cl-en { font-size:15px; color:#8a7aa5; }
+
+  .confetti { position: fixed; top:-40px; font-size: 32px; pointer-events:none; z-index: 50;
+              animation: fall 1.6s linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
+
+  #voice-tip { position:fixed; bottom:0; left:0; right:0; background:#3a2a55; color:#fff;
+    font-size:13px; padding:10px 14px; text-align:center; z-index:99; line-height:1.4; display:none; }
+  #voice-tip b { margin-left:8px; cursor:pointer; text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<!-- ================= HOME (pick a theme) ================= -->
+<section id="home" class="screen active">
+  <div class="bubble" id="home-bubble">سلام!</div>
+  <div class="roll-track" id="roll-track" onclick="kooSpeak()">
+    <div class="roller" id="roller">
+      <svg class="wheel" id="wheel" viewBox="0 0 200 200"></svg>
+      <svg class="mascot" id="mascot-home" viewBox="0 0 200 200"></svg>
+    </div>
+  </div>
+  <div id="home-en">Tap Koochooloo as she rolls by!</div>
+  <h1>Farsi Friends</h1>
+  <div class="themes" id="theme-list"></div>
+</section>
+
+<!-- ================= MENU (Learn / Play for a theme) ================= -->
+<section id="menu" class="screen">
+  <button class="back" onclick="go('home')">⬅︎</button>
+  <div class="bubble" id="menu-title" style="font-size:26px">Theme</div>
+  <button class="big-btn btn-pink"  onclick="go('learn')">📚 Learn</button>
+  <button class="big-btn btn-green" onclick="startPlay()">🎮 Play</button>
+</section>
+
+<!-- ================= LEARN ================= -->
+<section id="learn" class="screen">
+  <button class="back" onclick="go('menu')">⬅︎</button>
+  <div class="bubble" id="learn-bubble" style="font-size:24px">Tap a card to hear it!</div>
+  <div id="learn-content"></div>
+</section>
+
+<!-- ================= PLAY ================= -->
+<section id="play" class="screen">
+  <button class="back" onclick="go('menu')">⬅︎</button>
+  <svg class="mascot" id="mascot-play" viewBox="0 0 200 200" style="width:130px;height:130px"></svg>
+  <button class="prompt-btn" onclick="sayCurrent()">🔊 Say it again</button>
+  <div class="choices" id="choices"></div>
+</section>
+
+<!-- ================= STORY PICKER ================= -->
+<section id="stories" class="screen">
+  <button class="back" onclick="go('home')">⬅︎</button>
+  <div class="bubble" style="font-size:26px">🎬 Stories</div>
+  <div class="themes" id="story-list"></div>
+</section>
+
+<!-- ================= STORY (conversation) ================= -->
+<section id="story" class="screen">
+  <button class="back" onclick="go('stories')">⬅︎</button>
+  <div class="bubble" id="story-bubble" style="font-size:30px; direction:rtl">…</div>
+  <div id="story-en"></div>
+  <div class="stage">
+    <svg id="char-hamster" class="actor" viewBox="0 0 200 200"></svg>
+    <svg id="char-cat" class="actor" viewBox="0 0 200 200"></svg>
+  </div>
+  <div class="choices" id="story-choices"></div>
+  <div id="story-controls">
+    <button class="prompt-btn" onclick="replayLine()" style="margin:0">🔊</button>
+    <button class="big-btn btn-green" id="story-next" style="min-width:160px" onclick="nextLine()">Next ▶</button>
+  </div>
+</section>
+
+<!-- ================= FEED KOOCHOOLOO ================= -->
+<section id="feed" class="screen">
+  <button class="back" onclick="go('home')">⬅︎</button>
+  <div class="bubble" id="feed-bubble" style="direction:rtl">…</div>
+  <div id="feed-en"></div>
+  <div id="feed-hamster-wrap"><svg id="feed-hamster" class="mascot" viewBox="0 0 200 200" style="width:140px;height:140px"></svg></div>
+  <div id="feed-meter"><div id="feed-fill"></div><div id="feed-meter-label">Tummy</div></div>
+  <button class="prompt-btn" onclick="feedAsk()" style="margin:4px">🔊 Again</button>
+  <div class="choices" id="feed-choices"></div>
+</section>
+
+<!-- One-time note shown only if a recording fails and we fall back to robot voice -->
+<div id="voice-tip">
+  🔈 Couldn't load a recording, using the device voice instead. If sound is missing, run the app from a
+  local server (ask in chat) instead of opening the file directly.
+  <b onclick="document.getElementById('voice-tip').style.display='none'">Got it</b>
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   Farsi Friends — multi-theme prototype.
+   Flow: Home (pick theme) -> Menu (Learn / Play) -> activity.
+   Audio = pre-generated neural Persian MP3s in audio/.
+----------------------------------------------------------*/
+
+const THEMES = [
+  {
+    id: "greetings", name: "Greetings", icon: "👋",
+    phrases: [
+      // Hello & Goodbye
+      { fa:"سلام",        tr:"salâm",         say:"salaam",        en:"Hello",         emoji:"👋", group:"👋 Hello & Goodbye", audio:"audio/salam.mp3" },
+      { fa:"درود",        tr:"dorood",        say:"doh rood",      en:"Hi / Greetings", emoji:"🌸", group:"👋 Hello & Goodbye", audio:"audio/dorood.mp3" },
+      { fa:"خداحافظ",     tr:"khodâhâfez",    say:"khoda hafez",   en:"Goodbye",       emoji:"🙋", group:"👋 Hello & Goodbye", audio:"audio/khodahafez.mp3" },
+      { fa:"شب بخیر",     tr:"shab bekheyr",  say:"shab be kheyr", en:"Good night",    emoji:"🌙", group:"👋 Hello & Goodbye", audio:"audio/shab_bekheyr.mp3" },
+      // How are you?
+      { fa:"چطوری؟",      tr:"chetori?",      say:"che tori",      en:"How are you?",  emoji:"🤔", group:"🤔 How are you?", audio:"audio/chetori.mp3" },
+      { fa:"خوبی؟",       tr:"khoobi?",       say:"khoo bee",      en:"Are you well?", emoji:"🙂", group:"🤔 How are you?", audio:"audio/khoobi.mp3" },
+      { fa:"خوبم",        tr:"khoobam",       say:"khoo bam",      en:"I'm good",      emoji:"👍", group:"🤔 How are you?", audio:"audio/khoobam.mp3" },
+      // Everyday words
+      { fa:"مرسی",        tr:"mersi",         say:"merci",         en:"Thank you",     emoji:"🙏", group:"💬 Everyday words", audio:"audio/mersi.mp3" },
+      { fa:"بله",         tr:"bale",          say:"baleh",         en:"Yes",           emoji:"✅", group:"💬 Everyday words", audio:"audio/bale.mp3" },
+      { fa:"نه",          tr:"na",            say:"na",            en:"No",            emoji:"🚫", group:"💬 Everyday words", audio:"audio/na.mp3" },
+      { fa:"دوستت دارم",  tr:"doostet dâram", say:"dooset daaram", en:"I love you",    emoji:"❤️", group:"💬 Everyday words", audio:"audio/dooset_daram.mp3" },
+    ],
+  },
+  {
+    id: "food", name: "Food", icon: "🍎",
+    phrases: [
+      // Fruit
+      { fa:"سیب",         tr:"sib",           say:"seeb",          en:"Apple",         emoji:"🍎", group:"🍓 Fruit", audio:"audio/sib.mp3" },
+      { fa:"موز",         tr:"moaz",          say:"mowz",          en:"Banana",        emoji:"🍌", group:"🍓 Fruit", audio:"audio/moz.mp3" },
+      { fa:"انگور",       tr:"angoor",        say:"an goor",       en:"Grapes",        emoji:"🍇", group:"🍓 Fruit", audio:"audio/angoor.mp3" },
+      { fa:"پرتقال",      tr:"porteghâl",     say:"por te ghaal",  en:"Orange",        emoji:"🍊", group:"🍓 Fruit", audio:"audio/porteghal.mp3" },
+      { fa:"هندوانه",     tr:"hendevâne",     say:"hen de vaa ne", en:"Watermelon",    emoji:"🍉", group:"🍓 Fruit", audio:"audio/hendevane.mp3" },
+      { fa:"گیلاس",       tr:"gilâs",         say:"gee laas",      en:"Cherry",        emoji:"🍒", group:"🍓 Fruit", audio:"audio/gilas.mp3" },
+      { fa:"هلو",         tr:"holoo",         say:"ho loo",        en:"Peach",         emoji:"🍑", group:"🍓 Fruit", audio:"audio/holoo.mp3" },
+      // Vegetables
+      { fa:"هویج",        tr:"havij",         say:"ha veej",       en:"Carrot",        emoji:"🥕", group:"🥕 Vegetables", audio:"audio/havij.mp3" },
+      { fa:"گوجه‌فرنگی",   tr:"goje farangi",  say:"go je fa ran gee", en:"Tomato",     emoji:"🍅", group:"🥕 Vegetables", audio:"audio/gojefarangi.mp3" },
+      { fa:"خیار",        tr:"khiyâr",        say:"khee yaar",     en:"Cucumber",      emoji:"🥒", group:"🥕 Vegetables", audio:"audio/khiyar.mp3" },
+      { fa:"سیب‌زمینی",    tr:"sib-zamini",    say:"seeb za mee nee", en:"Potato",      emoji:"🥔", group:"🥕 Vegetables", audio:"audio/sibzamini.mp3" },
+      { fa:"پیاز",        tr:"piyâz",         say:"pee yaaz",      en:"Onion",         emoji:"🧅", group:"🥕 Vegetables", audio:"audio/piyaz.mp3" },
+      { fa:"ذرت",         tr:"zorrat",        say:"zo rat",        en:"Corn",          emoji:"🌽", group:"🥕 Vegetables", audio:"audio/zorrat.mp3" },
+      // Grains
+      { fa:"نان",         tr:"nân",           say:"naan",          en:"Bread",         emoji:"🍞", group:"🌾 Grains", audio:"audio/nan.mp3" },
+      { fa:"برنج",        tr:"berenj",        say:"beh renj",      en:"Rice",          emoji:"🍚", group:"🌾 Grains", audio:"audio/berenj.mp3" },
+      // Dairy
+      { fa:"شیر",         tr:"shir",          say:"sheer",         en:"Milk",          emoji:"🥛", group:"🧀 Dairy", audio:"audio/shir.mp3" },
+      { fa:"پنیر",        tr:"panir",         say:"pa neer",       en:"Cheese",        emoji:"🧀", group:"🧀 Dairy", audio:"audio/panir.mp3" },
+      // Drinks
+      { fa:"آب",          tr:"âb",            say:"aab",           en:"Water",         emoji:"💧", group:"🥤 Drinks", audio:"audio/ab.mp3" },
+      // Useful phrases
+      { fa:"گرسنه هستم",  tr:"gorosne hastam", say:"go ros ne has tam", en:"I'm hungry", emoji:"😋", group:"💬 Useful phrases", audio:"audio/gorosname.mp3" },
+      { fa:"تشنه هستم",   tr:"teshne hastam",  say:"tesh ne has tam",   en:"I'm thirsty", emoji:"🥤", group:"💬 Useful phrases", audio:"audio/teshname.mp3" },
+      { fa:"خوشمزه است",  tr:"khoshmaze ast", say:"khosh maze",    en:"It is delicious", emoji:"😍", group:"💬 Useful phrases", audio:"audio/khoshmaze.mp3" },
+      { fa:"نوش جان",     tr:"noosh-e jân",   say:"noosheh jaan",  en:"Enjoy!",        emoji:"🍽️", group:"💬 Useful phrases", audio:"audio/nooshe_jan.mp3" },
+    ],
+  },
+  {
+    id: "nature", name: "Nature", icon: "🌳",
+    phrases: [
+      // Trees & plants
+      { fa:"درخت",        tr:"derakht",       say:"de rakht",      en:"Tree",          emoji:"🌳", group:"🌳 Trees & plants", audio:"audio/derakht.mp3" },
+      { fa:"جنگل",        tr:"jangal",        say:"jan gal",       en:"Forest",        emoji:"🌲🌲", group:"🌳 Trees & plants", audio:"audio/jangal.mp3" },
+      { fa:"گل",          tr:"gol",           say:"gol",           en:"Flower",        emoji:"🌸", group:"🌳 Trees & plants", audio:"audio/gol.mp3" },
+      { fa:"برگ",         tr:"barg",          say:"barg",          en:"Leaf",          emoji:"🍃", group:"🌳 Trees & plants", audio:"audio/barg.mp3" },
+      { fa:"چمن",         tr:"chaman",        say:"cha man",       en:"Grass",         emoji:"🌱", group:"🌳 Trees & plants", audio:"audio/chaman.mp3" },
+      { fa:"گیاه",        tr:"giyâh",         say:"gee yaah",      en:"Plant",         emoji:"🪴", group:"🌳 Trees & plants", audio:"audio/giyah.mp3" },
+      // Sky & weather
+      { fa:"خورشید",      tr:"khorshid",      say:"khor sheed",    en:"Sun",           emoji:"☀️", group:"☀️ Sky & weather", audio:"audio/khorshid.mp3" },
+      { fa:"ماه",         tr:"mâh",           say:"maah",          en:"Moon",          emoji:"🌙", group:"☀️ Sky & weather", audio:"audio/mah.mp3" },
+      { fa:"ستاره",       tr:"setâre",        say:"se taa re",     en:"Star",          emoji:"⭐️", group:"☀️ Sky & weather", audio:"audio/setare.mp3" },
+      { fa:"آسمان",       tr:"âsemân",        say:"aa se maan",    en:"Sky",           emoji:"🌤️", group:"☀️ Sky & weather", audio:"audio/aseman.mp3" },
+      { fa:"ابر",         tr:"abr",           say:"abr",           en:"Cloud",         emoji:"☁️", group:"☀️ Sky & weather", audio:"audio/abr.mp3" },
+      { fa:"باران",       tr:"bârân",         say:"baa raan",      en:"Rain",          emoji:"🌧️", group:"☀️ Sky & weather", audio:"audio/baran.mp3" },
+      { fa:"برف",         tr:"barf",          say:"barf",          en:"Snow",          emoji:"❄️", group:"☀️ Sky & weather", audio:"audio/barf.mp3" },
+      { fa:"باد",         tr:"bâd",           say:"baad",          en:"Wind",          emoji:"💨", group:"☀️ Sky & weather", audio:"audio/bad.mp3" },
+      { fa:"رنگین‌کمان",   tr:"rangin-kamân",  say:"ran geen ka maan", en:"Rainbow",    emoji:"🌈", group:"☀️ Sky & weather", audio:"audio/ranginkaman.mp3" },
+      // Water & land
+      { fa:"دریا",        tr:"daryâ",         say:"dar yaa",       en:"Sea",           emoji:"🌊", group:"🌊 Water & land", audio:"audio/darya.mp3" },
+      { fa:"رودخانه",     tr:"rudkhâne",      say:"rood khaa ne",  en:"River",         emoji:"🏞️", group:"🌊 Water & land", audio:"audio/rudkhane.mp3" },
+      { fa:"کوه",         tr:"kuh",           say:"kooh",          en:"Mountain",      emoji:"⛰️", group:"🌊 Water & land", audio:"audio/kuh.mp3" },
+      { fa:"سنگ",         tr:"sang",          say:"sang",          en:"Stone",         emoji:"🪨", group:"🌊 Water & land", audio:"audio/sang.mp3" },
+      // Little creatures
+      { fa:"پروانه",      tr:"parvâne",       say:"par vaa ne",    en:"Butterfly",     emoji:"🦋", group:"🦋 Little creatures", audio:"audio/parvane.mp3" },
+      { fa:"پرنده",       tr:"parande",       say:"pa ran de",     en:"Bird",          emoji:"🐦", group:"🦋 Little creatures", audio:"audio/parande.mp3" },
+      { fa:"زنبور",       tr:"zanbur",        say:"zan boor",      en:"Bee",           emoji:"🐝", group:"🦋 Little creatures", audio:"audio/zanbur.mp3" },
+      { fa:"ماهی",        tr:"mâhi",          say:"maa hee",       en:"Fish",          emoji:"🐟", group:"🦋 Little creatures", audio:"audio/mahi.mp3" },
+    ],
+  },
+  {
+    id: "places", name: "Places", icon: "🏙️",
+    phrases: [
+      // Home & town
+      { fa:"خانه",        tr:"khâne",         say:"khaa ne",       en:"House",         emoji:"🏠", group:"🏠 Home & town", audio:"audio/khane.mp3" },
+      { fa:"ساختمان",     tr:"sâkhtemân",     say:"saakh te maan", en:"Building",      emoji:"🏢", group:"🏠 Home & town", audio:"audio/sakhteman.mp3" },
+      { fa:"برج",         tr:"borj",          say:"borj",          en:"Tower",         emoji:"🗼", group:"🏠 Home & town", audio:"audio/borj.mp3" },
+      { fa:"قلعه",        tr:"ghal'e",        say:"gha le",        en:"Castle",        emoji:"🏰", group:"🏠 Home & town", audio:"audio/ghale.mp3" },
+      { fa:"کارخانه",     tr:"kârkhâne",      say:"kaar khaa ne",  en:"Factory",       emoji:"🏭", group:"🏠 Home & town", audio:"audio/karkhane.mp3" },
+      // Around town
+      { fa:"مدرسه",       tr:"madrese",       say:"mad re se",     en:"School",        emoji:"🏫", group:"🏫 Around town", audio:"audio/madrese.mp3" },
+      { fa:"دانشگاه",     tr:"dâneshgâh",     say:"daa nesh gaah", en:"University",    emoji:"🎓", group:"🏫 Around town", audio:"audio/daneshgah.mp3" },
+      { fa:"بیمارستان",   tr:"bimârestân",    say:"bee maa res taan", en:"Hospital",   emoji:"🏥", group:"🏫 Around town", audio:"audio/bimarestan.mp3" },
+      { fa:"کتابخانه",    tr:"ketâbkhâne",    say:"ke taab khaa ne", en:"Library",     emoji:"📚", group:"🏫 Around town", audio:"audio/ketabkhane.mp3" },
+      { fa:"موزه",        tr:"muze",          say:"moo ze",        en:"Museum",        emoji:"🖼️", group:"🏫 Around town", audio:"audio/muze.mp3" },
+      { fa:"مسجد",        tr:"masjed",        say:"mas jed",       en:"Mosque",        emoji:"🕌", group:"🏫 Around town", audio:"audio/masjed.mp3" },
+      { fa:"بانک",        tr:"bânk",          say:"baank",         en:"Bank",          emoji:"🏦", group:"🏫 Around town", audio:"audio/bank.mp3" },
+      // Shops & food
+      { fa:"مغازه",       tr:"maghâze",       say:"magh aa ze",    en:"Shop",          emoji:"🏪", group:"🏪 Shops & food", audio:"audio/maghaze.mp3" },
+      { fa:"نانوایی",     tr:"nânvâyi",       say:"naan vaa yee",  en:"Bakery",        emoji:"🥐", group:"🏪 Shops & food", audio:"audio/nanvayi.mp3" },
+      { fa:"رستوران",     tr:"restorân",      say:"res to raan",   en:"Restaurant",    emoji:"🍽️", group:"🏪 Shops & food", audio:"audio/restoran.mp3" },
+      // Going places
+      { fa:"فرودگاه",     tr:"forudgâh",      say:"fo rood gaah",  en:"Airport",       emoji:"✈️", group:"✈️ Going places", audio:"audio/forudgah.mp3" },
+      { fa:"ایستگاه",     tr:"istgâh",        say:"eest gaah",     en:"Station",       emoji:"🚉", group:"✈️ Going places", audio:"audio/istgah.mp3" },
+      { fa:"سینما",       tr:"sinemâ",        say:"see ne maa",    en:"Cinema",        emoji:"🎬", group:"✈️ Going places", audio:"audio/sinema.mp3" },
+      { fa:"ورزشگاه",     tr:"varzeshgâh",    say:"var zesh gaah", en:"Stadium",       emoji:"🏟️", group:"✈️ Going places", audio:"audio/varzeshgah.mp3" },
+      { fa:"پارک",        tr:"pârk",          say:"paark",         en:"Park",          emoji:"🏞️", group:"✈️ Going places", audio:"audio/park.mp3" },
+      { fa:"باغ‌وحش",     tr:"bâgh-e vahsh",  say:"baagh e vahsh", en:"Zoo",           emoji:"🦁", group:"✈️ Going places", audio:"audio/baghevahsh.mp3" },
+    ],
+  },
+];
+
+let currentTheme = THEMES[0];
+
+/* ---------- Mascot: Koochooloo the hamster (more realistic, reused) ----------
+   She is drawn into four different <svg>s (home, play, story, feed), so the
+   gradients need ids unique per copy — duplicate ids all resolve to whichever
+   copy comes first in the document, which may be on a display:none screen. */
+let mascotSeq = 0;
+function mascotSVG() {
+  const uid = 'koo' + (++mascotSeq);
+  return `
+    <defs>
+      <radialGradient id="${uid}-body" cx="50%" cy="36%" r="72%">
+        <stop offset="0%" stop-color="#f8d199"/>
+        <stop offset="55%" stop-color="#eab063"/>
+        <stop offset="100%" stop-color="#cd8c41"/>
+      </radialGradient>
+      <radialGradient id="${uid}-belly" cx="50%" cy="45%" r="62%">
+        <stop offset="0%" stop-color="#fff8ee"/>
+        <stop offset="100%" stop-color="#f7e3c4"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="100" cy="186" rx="56" ry="10" fill="rgba(0,0,0,.10)"/>
+    <!-- ears -->
+    <circle cx="58" cy="54" r="21" fill="#d99a4f"/>
+    <circle cx="142" cy="54" r="21" fill="#d99a4f"/>
+    <circle cx="58" cy="56" r="12" fill="#f3b3ac"/>
+    <circle cx="142" cy="56" r="12" fill="#f3b3ac"/>
+    <!-- big cheek pouches -->
+    <ellipse cx="54" cy="126" rx="28" ry="26" fill="url(#${uid}-body)"/>
+    <ellipse cx="146" cy="126" rx="28" ry="26" fill="url(#${uid}-body)"/>
+    <!-- body / head -->
+    <ellipse cx="100" cy="112" rx="74" ry="72" fill="url(#${uid}-body)"/>
+    <!-- cream face / belly -->
+    <ellipse cx="100" cy="126" rx="48" ry="46" fill="url(#${uid}-belly)"/>
+    <!-- cheek blush -->
+    <ellipse cx="56" cy="140" rx="11" ry="7" fill="#ff9bb0" opacity=".4"/>
+    <ellipse cx="144" cy="140" rx="11" ry="7" fill="#ff9bb0" opacity=".4"/>
+    <!-- eyes -->
+    <ellipse cx="79" cy="104" rx="11" ry="12.5" fill="#2b2030"/>
+    <ellipse cx="121" cy="104" rx="11" ry="12.5" fill="#2b2030"/>
+    <circle cx="83" cy="99" r="3.6" fill="#fff"/>
+    <circle cx="125" cy="99" r="3.6" fill="#fff"/>
+    <circle cx="75" cy="108" r="1.8" fill="#fff" opacity=".55"/>
+    <circle cx="117" cy="108" r="1.8" fill="#fff" opacity=".55"/>
+    <!-- nose -->
+    <ellipse cx="100" cy="122" rx="7.5" ry="5.5" fill="#9c4a63"/>
+    <path d="M100 127 v7" stroke="#7a4a33" stroke-width="2.2" stroke-linecap="round"/>
+    <!-- mouth -->
+    <path d="M100 134 q-10 9 -19 2" stroke="#7a4a33" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M100 134 q10 9 19 2" stroke="#7a4a33" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <!-- front teeth -->
+    <rect x="95.5" y="134" width="9" height="10" rx="2.5" fill="#fff" stroke="#e3c49a" stroke-width="1"/>
+    <line x1="100" y1="134" x2="100" y2="144" stroke="#e3c49a" stroke-width="1"/>
+    <!-- whiskers -->
+    <line x1="72" y1="118" x2="34" y2="111" stroke="#cbae86" stroke-width="1.6"/>
+    <line x1="72" y1="124" x2="34" y2="126" stroke="#cbae86" stroke-width="1.6"/>
+    <line x1="128" y1="118" x2="166" y2="111" stroke="#cbae86" stroke-width="1.6"/>
+    <line x1="128" y1="124" x2="166" y2="126" stroke="#cbae86" stroke-width="1.6"/>
+    <!-- paws -->
+    <ellipse cx="80" cy="172" rx="13" ry="9" fill="#e7a85b"/>
+    <ellipse cx="120" cy="172" rx="13" ry="9" fill="#e7a85b"/>
+    <ellipse cx="85" cy="150" rx="9" ry="8" fill="#eeb267"/>
+    <ellipse cx="115" cy="150" rx="9" ry="8" fill="#eeb267"/>`;
+}
+/* ---------- Cat friend (for Stories) ---------- */
+function catSVG() {
+  return `
+    <ellipse cx="100" cy="182" rx="48" ry="10" fill="rgba(0,0,0,.08)"/>
+    <path d="M54 72 L48 32 L88 58 Z" fill="#9aa6b2"/>
+    <path d="M146 72 L152 32 L112 58 Z" fill="#9aa6b2"/>
+    <path d="M60 66 L57 44 L80 58 Z" fill="#ffd1a8"/>
+    <path d="M140 66 L143 44 L120 58 Z" fill="#ffd1a8"/>
+    <circle cx="100" cy="110" r="62" fill="#aab4c0"/>
+    <ellipse cx="100" cy="126" rx="40" ry="30" fill="#eef2f6"/>
+    <ellipse cx="80" cy="106" rx="8" ry="11" fill="#5aa469"/>
+    <ellipse cx="120" cy="106" rx="8" ry="11" fill="#5aa469"/>
+    <circle cx="80" cy="107" r="4" fill="#16241a"/>
+    <circle cx="120" cy="107" r="4" fill="#16241a"/>
+    <circle cx="82" cy="103" r="1.6" fill="#fff"/>
+    <circle cx="122" cy="103" r="1.6" fill="#fff"/>
+    <path d="M93 122 L107 122 L100 129 Z" fill="#e58aa0"/>
+    <path d="M100 129 q-6 7 -13 3 M100 129 q6 7 13 3" stroke="#3a2a55" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <line x1="60" y1="120" x2="32" y2="114" stroke="#8893a0" stroke-width="2"/>
+    <line x1="60" y1="126" x2="32" y2="128" stroke="#8893a0" stroke-width="2"/>
+    <line x1="140" y1="120" x2="168" y2="114" stroke="#8893a0" stroke-width="2"/>
+    <line x1="140" y1="126" x2="168" y2="128" stroke="#8893a0" stroke-width="2"/>`;
+}
+/* ---------- Hamster wheel (home screen) ---------- */
+function wheelSVG() {
+  let rungs = '';
+  const n = 16, inner = 64, outer = 86, c = 100;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * 2 * Math.PI;
+    rungs += `<line x1="${(c+inner*Math.cos(a)).toFixed(1)}" y1="${(c+inner*Math.sin(a)).toFixed(1)}" x2="${(c+outer*Math.cos(a)).toFixed(1)}" y2="${(c+outer*Math.sin(a)).toFixed(1)}" stroke="#caa168" stroke-width="5" stroke-linecap="round"/>`;
+  }
+  return `<circle cx="100" cy="100" r="90" fill="none" stroke="#b9854f" stroke-width="9"/>
+          <circle cx="100" cy="100" r="60" fill="none" stroke="#caa168" stroke-width="6"/>${rungs}`;
+}
+document.getElementById('wheel').innerHTML = wheelSVG();
+document.getElementById('mascot-home').innerHTML = mascotSVG();
+document.getElementById('mascot-play').innerHTML = mascotSVG();
+
+// Koochooloo rolls across a couple of times, then parks in the centre
+const roller = document.getElementById('roller');
+if (roller) roller.addEventListener('animationend', (e) => {
+  if (e.animationName === 'rollAcross') roller.classList.add('parked');
+});
+
+function cheerMascot(id) {
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.classList.add('happy');
+  setTimeout(() => m.classList.remove('happy'), 1100);
+}
+
+/* ---------- Koochooloo's personality (always hungry, loves her wheel) ---------- */
+const KOO_LINES = [
+  { fa:'گرسنه هستم!',     en:"I'm hungry!",             audio:'audio/k_hungry.mp3' },
+  { fa:'یه چیزی بخوریم؟',  en:'Shall we eat something?', audio:'audio/k_eat.mp3' },
+  { fa:'دلم سیب می‌خواد!',  en:'I want an apple!',        audio:'audio/k_apple.mp3' },
+  { fa:'بازی کنیم؟',       en:'Shall we play?',          audio:'audio/k_play.mp3' },
+  { fa:'چرخمو دوست دارم!', en:'I love my wheel!',        audio:'audio/k_wheel.mp3' },
+  { fa:'بریم بدوییم!',     en:"Let's go run!",           audio:'audio/k_run.mp3' },
+];
+let kooIdx = -1;
+function kooSpeak() {
+  kooIdx = (kooIdx + 1 + Math.floor(Math.random() * 2)) % KOO_LINES.length;
+  const l = KOO_LINES[kooIdx];
+  document.getElementById('home-bubble').textContent = l.fa;
+  document.getElementById('home-en').textContent = l.en;
+  say({ audio: l.audio });
+  cheerMascot('mascot-home');
+}
+
+/* ---------- Build the theme picker on Home ---------- */
+const themeList = document.getElementById('theme-list');
+THEMES.forEach(theme => {
+  const tile = document.createElement('div');
+  tile.className = 'theme-tile';
+  tile.innerHTML = `<div class="ico">${theme.icon}</div><div class="lbl">${theme.name}</div>`;
+  tile.onclick = () => pickTheme(theme);
+  themeList.appendChild(tile);
+});
+// Stories tile — opens the picker (CONVOS is defined further down)
+const storyTile = document.createElement('div');
+storyTile.className = 'theme-tile';
+storyTile.innerHTML = `<div class="ico">🎬</div><div class="lbl">Stories</div>`;
+storyTile.onclick = () => go('stories');
+themeList.appendChild(storyTile);
+// Feed Koochooloo game tile
+const feedTile = document.createElement('div');
+feedTile.className = 'theme-tile';
+feedTile.innerHTML = `<div class="ico">🥕</div><div class="lbl">Feed Me!</div>`;
+feedTile.onclick = () => startFeed('all');
+themeList.appendChild(feedTile);
+// Nuts-only feeding round
+const nutTile = document.createElement('div');
+nutTile.className = 'theme-tile';
+nutTile.innerHTML = `<div class="ico">🥜</div><div class="lbl">Nuts!</div>`;
+nutTile.onclick = () => startFeed('nuts');
+themeList.appendChild(nutTile);
+
+function pickTheme(theme) {
+  currentTheme = theme;
+  document.getElementById('menu-title').textContent = theme.icon + " " + theme.name;
+  buildLearnGrid();
+  go('menu');
+}
+
+/* ---------- Navigation ----------
+   Every activity is driven by timers (replay the prompt, next round, …).
+   Leaving a screen has to cancel them and hush the audio, or the game keeps
+   playing — and talking — over whatever screen the kid moved to.          */
+let screenId = 'home';
+let pendingTimers = [];
+
+// setTimeout that quietly gives up if the kid has left the screen since.
+function later(fn, ms) {
+  const from = screenId;
+  const t = setTimeout(() => { if (screenId === from) fn(); }, ms);
+  pendingTimers.push(t);
+  return t;
+}
+function stopAudio() {
+  try { if (player) { player.pause(); player.currentTime = 0; } } catch (e) { /* ignore */ }
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+}
+
+function go(id) {
+  pendingTimers.forEach(clearTimeout);
+  pendingTimers = [];
+  stopAudio();
+  screenId = id;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'home') { say({audio:'audio/salam.mp3', fa:'سلام', say:'salaam'}); cheerMascot('mascot-home'); }
+}
+
+/* ---------- Build Learn grid for the current theme ---------- */
+function buildLearnGrid() {
+  const container = document.getElementById('learn-content');
+  container.innerHTML = '';
+  document.getElementById('learn').scrollTop = 0;   // new theme starts at the top
+  document.getElementById('learn-bubble').textContent = "Tap a card to hear it!";
+  let lastGroup = null, grid = null;
+  currentTheme.phrases.forEach(p => {
+    // Start a new labeled section whenever the group changes
+    if (p.group && p.group !== lastGroup) {
+      lastGroup = p.group;
+      const head = document.createElement('div');
+      head.className = 'section-head';
+      head.textContent = p.group;
+      container.appendChild(head);
+      grid = document.createElement('div');
+      grid.className = 'grid';
+      container.appendChild(grid);
+    } else if (!grid) {            // theme without groups: one plain grid
+      grid = document.createElement('div');
+      grid.className = 'grid';
+      container.appendChild(grid);
+    }
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<div class="emoji">${p.emoji}</div>
+                      <div class="fa">${p.fa}</div>
+                      <div class="tr">${p.tr}</div>
+                      <div class="en">${p.en}</div>`;
+    card.onclick = () => {
+      say(p);
+      document.getElementById('learn-bubble').textContent = p.en + " = " + p.tr;
+    };
+    grid.appendChild(card);
+  });
+}
+
+/* ---------- Play: "tap what you heard" ---------- */
+let current = null;
+function startPlay() {
+  go('play');
+  nextRound();
+}
+function nextRound() {
+  const pool = [...currentTheme.phrases].sort(() => Math.random() - 0.5);
+  // pool[0] and pool[1] are both inside the 3 shown, so either works as the
+  // target — take the second when the first would repeat the last round.
+  const target = (pool[0] === current && pool.length > 1) ? pool[1] : pool[0];
+  const options = pool.slice(0, 3).sort(() => Math.random() - 0.5);
+  current = target;
+
+  const box = document.getElementById('choices');
+  box.innerHTML = '';
+  box.style.pointerEvents = '';
+  options.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'choice';
+    b.textContent = p.emoji;
+    b.onclick = () => choose(b, p);
+    box.appendChild(b);
+  });
+  later(sayCurrent, 400);
+}
+function sayCurrent() { if (current) say(current); }
+
+function choose(btn, picked) {
+  if (picked === current) {
+    // Lock the tray during the celebration, or a stray tap on a leftover
+    // wrong answer shakes and re-asks over the top of "âfarin!".
+    document.getElementById('choices').style.pointerEvents = 'none';
+    btn.classList.add('right');
+    say({audio:'audio/afarin.mp3', fa:'آفرین', say:'aafarin'});  // âfarin = well done!
+    cheerMascot('mascot-play');
+    confetti();
+    later(nextRound, 1500);
+  } else {
+    btn.classList.add('wrong');
+    setTimeout(() => btn.classList.remove('wrong'), 400);
+    later(sayCurrent, 500);  // gently replay, let them try again
+  }
+}
+
+/* ---------- Confetti ---------- */
+function confetti() {
+  const bits = ['🎉','⭐️','🌟','💫','🎊','❤️'];
+  for (let i = 0; i < 24; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.textContent = bits[Math.floor(Math.random()*bits.length)];
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.animationDelay = Math.random()*0.4 + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2000);
+  }
+}
+
+/* ---------- Story: Koochooloo's conversations ---------- */
+const MASCOT_NAME = "Koochooloo";   // کوچولو = "little one"
+const CONVOS = {
+  cat: {
+    title: "Meet the Cat", icon: "🐱",
+    lines: [
+      { who:'hamster', fa:'سلام!',                 en:'Hello!',                  audio:'audio/cc01.mp3' },
+      { who:'cat',     fa:'سلام!',                 en:'Hello!',                  audio:'audio/cc02.mp3' },
+      { who:'hamster', fa:'چطوری؟',                en:'How are you?',            audio:'audio/cc03.mp3' },
+      { who:'cat',     fa:'خوبم، مرسی. تو چطوری؟', en:"I'm good, thanks. And you?", audio:'audio/cc04.mp3' },
+      { who:'hamster', fa:'گرسنه هستم!',           en:"I'm hungry!",             audio:'audio/cc05.mp3' },
+      { who:'cat',     fa:'سیب می‌خوای؟',          en:'Do you want an apple?',   audio:'audio/cc06.mp3' },
+      { who:'hamster', choice:[
+          { fa:'بله، مرسی!', en:'Yes, thank you!', audio:'audio/cc07a.mp3' },
+          { fa:'نه، مرسی.',  en:'No, thank you.',  audio:'audio/cc07b.mp3' },
+      ]},
+      { who:'cat',     fa:'بفرما، نوش جان!',       en:'Here you go, enjoy!',     audio:'audio/cc08.mp3' },
+      { who:'hamster', fa:'خوشمزه است!',          en:"It's delicious!",         audio:'audio/cc09.mp3' },
+      { who:'hamster', fa:'خداحافظ!',             en:'Goodbye!',                audio:'audio/cc10.mp3' },
+      { who:'cat',     fa:'خداحافظ!',             en:'Goodbye!',                audio:'audio/cc11.mp3' },
+    ],
+  },
+  park: {
+    title: "At the Park", icon: "🌳",
+    lines: [
+      { who:'hamster', fa:'بریم پارک؟',            en:'Shall we go to the park?', audio:'audio/pk01.mp3' },
+      { who:'cat',     fa:'بله، بریم!',            en:"Yes, let's go!",           audio:'audio/pk02.mp3' },
+      { who:'hamster', fa:'نگاه کن! یک درخت بزرگ!', en:'Look! A big tree!',        audio:'audio/pk03.mp3' },
+      { who:'cat',     fa:'یک پرنده روی درخت است.', en:'A bird is on the tree.',   audio:'audio/pk04.mp3' },
+      { who:'hamster', fa:'یک پروانه هم هست!',      en:'There is a butterfly too!', audio:'audio/pk05.mp3' },
+      { who:'hamster', choice:[
+          { fa:'خیلی قشنگ است!', en:'It is very beautiful!', audio:'audio/pk06a.mp3' },
+          { fa:'بیا بازی کنیم!',  en:"Let's play!",           audio:'audio/pk06b.mp3' },
+      ]},
+      { who:'cat',     fa:'باران می‌آید!',          en:'It is raining!',           audio:'audio/pk07.mp3' },
+      { who:'hamster', fa:'بریم خانه!',            en:"Let's go home!",           audio:'audio/pk08.mp3' },
+      { who:'cat',     fa:'خداحافظ پارک!',         en:'Goodbye, park!',           audio:'audio/pk09.mp3' },
+      { who:'hamster', fa:'امروز خیلی خوب بود!',    en:'Today was very good!',     audio:'audio/pk10.mp3' },
+      { who:'cat',     fa:'بله! خداحافظ!',         en:'Yes! Goodbye!',            audio:'audio/pk11.mp3' },
+    ],
+  },
+};
+
+/* Build the story picker — one tile per conversation */
+const storyListBox = document.getElementById('story-list');
+Object.keys(CONVOS).forEach(key => {
+  const tile = document.createElement('div');
+  tile.className = 'theme-tile';
+  tile.innerHTML = `<div class="ico">${CONVOS[key].icon}</div><div class="lbl">${CONVOS[key].title}</div>`;
+  tile.onclick = () => startStory(key);
+  storyListBox.appendChild(tile);
+});
+
+let storyLines = [], storyIdx = 0, storyKey = null;
+function startStory(key) {
+  const c = CONVOS[key]; if (!c) return;
+  storyLines = c.lines; storyIdx = 0; storyKey = key;
+  document.getElementById('char-hamster').innerHTML = mascotSVG();
+  document.getElementById('char-cat').innerHTML = catSVG();
+  const nb = document.getElementById('story-next');
+  nb.textContent = 'Next ▶'; nb.onclick = nextLine;
+  go('story');
+  showLine();
+}
+function setActiveSpeaker(who) {
+  document.getElementById('char-hamster').classList.toggle('speaking', who === 'hamster');
+  document.getElementById('char-cat').classList.toggle('speaking', who === 'cat');
+}
+function showLine() {
+  const line = storyLines[storyIdx];
+  const choicesBox = document.getElementById('story-choices');
+  const nextBtn = document.getElementById('story-next');
+  choicesBox.innerHTML = '';
+  document.getElementById('char-hamster').classList.remove('happy');
+  setActiveSpeaker(line.who);
+
+  if (line.choice) {                     // interactive: kid picks Koochooloo's reply
+    nextBtn.style.display = 'none';
+    document.getElementById('story-bubble').textContent = '؟';
+    document.getElementById('story-en').textContent = "Tap Koochooloo's reply:";
+    line.choice.forEach(opt => {
+      const b = document.createElement('button');
+      b.className = 'choice-line';
+      b.innerHTML = `<div class="cl-fa">${opt.fa}</div><div class="cl-en">${opt.en}</div>`;
+      b.onclick = () => {
+        document.getElementById('story-bubble').textContent = opt.fa;
+        document.getElementById('story-en').textContent = opt.en;
+        say({ audio: opt.audio });
+        choicesBox.innerHTML = '';
+        later(nextLine, 1700);   // nextLine ends the story if that was the last
+      };
+      choicesBox.appendChild(b);
+    });
+    return;
+  }
+
+  nextBtn.style.display = '';
+  document.getElementById('story-bubble').textContent = line.fa;
+  document.getElementById('story-en').textContent = line.en;
+  say({ audio: line.audio });
+}
+function replayLine() {
+  const line = storyLines[storyIdx];
+  if (!line) return;
+  if (line.audio) { say({ audio: line.audio }); return; }
+  // On a choice there is nothing of Koochooloo's to replay yet — repeat the
+  // cat's question instead, which is what the kid actually needs to hear again.
+  for (let i = storyIdx - 1; i >= 0; i--) {
+    if (storyLines[i].audio) { say({ audio: storyLines[i].audio }); return; }
+  }
+}
+function nextLine() {
+  storyIdx++;
+  if (storyIdx >= storyLines.length) { endStory(); return; }
+  showLine();
+}
+function endStory() {
+  setActiveSpeaker('hamster');
+  document.getElementById('char-hamster').classList.add('happy');
+  document.getElementById('story-choices').innerHTML = '';
+  document.getElementById('story-bubble').textContent = 'آفرین! 🎉';
+  document.getElementById('story-en').textContent = 'You finished the story!';
+  say({ audio: 'audio/cc_afarin.mp3' });
+  confetti();
+  const nb = document.getElementById('story-next');
+  nb.textContent = '↺ Again';
+  nb.onclick = () => startStory(storyKey);   // whichever story just finished
+}
+
+/* ---------- Feed Koochooloo game ---------- */
+const FEED_FOODS = [
+  { emoji:'🍎', fa:'سیب',   en:'apple',    want:'audio/k_apple.mp3' },
+  { emoji:'🥕', fa:'هویج',  en:'carrot',   want:'audio/kf_carrot.mp3' },
+  { emoji:'🌽', fa:'ذرت',   en:'corn',     want:'audio/kf_corn.mp3' },
+  { emoji:'🍇', fa:'انگور', en:'grapes',   want:'audio/kf_grapes.mp3' },
+  { emoji:'🥒', fa:'خیار',  en:'cucumber', want:'audio/kf_cucumber.mp3' },
+  { emoji:'🍌', fa:'موز',   en:'banana',   want:'audio/kf_banana.mp3' },
+  { fa:'تخمه',  en:'sunflower seeds', nut:true, want:'audio/kf_seeds.mp3', icon:'<path d="M38 26 C49 26 51 46 43 60 C34 46 27 26 38 26 Z" fill="#3a3a3a" stroke="#1f1f1f" stroke-width="2"/><path d="M38 32 C45 32 46 46 41 56" stroke="#d8d8d8" stroke-width="1.8" fill="none"/><path d="M63 40 C74 40 76 60 68 74 C59 60 52 40 63 40 Z" fill="#3a3a3a" stroke="#1f1f1f" stroke-width="2"/><path d="M63 46 C70 46 71 60 66 70" stroke="#d8d8d8" stroke-width="1.8" fill="none"/>' },
+  { fa:'بادام‌زمینی', en:'peanut', nut:true, want:'audio/kf_peanut.mp3', icon:'<path d="M50 12 C30 12 28 34 37 45 C28 56 30 90 50 90 C70 90 72 56 63 45 C72 34 70 12 50 12 Z" fill="#ddb074" stroke="#b98c4f" stroke-width="3"/><path d="M37 45 q13 9 26 0" stroke="#b98c4f" stroke-width="2.4" fill="none"/><circle cx="44" cy="30" r="2.2" fill="#c79a5d"/><circle cx="56" cy="30" r="2.2" fill="#c79a5d"/><circle cx="44" cy="66" r="2.2" fill="#c79a5d"/><circle cx="56" cy="66" r="2.2" fill="#c79a5d"/>' },
+  { fa:'گردو',  en:'walnut', nut:true, want:'audio/kf_walnut.mp3', icon:'<circle cx="50" cy="54" r="34" fill="#b9824a" stroke="#8a5d31" stroke-width="3"/><path d="M50 20 V88" stroke="#7d531f" stroke-width="3" fill="none"/><path d="M50 32 q-16 10 -11 26 q-3 14 9 24" stroke="#7d531f" stroke-width="2.4" fill="none"/><path d="M50 32 q16 10 11 26 q3 14 -9 24" stroke="#7d531f" stroke-width="2.4" fill="none"/><path d="M30 48 q11 6 7 18" stroke="#7d531f" stroke-width="1.8" fill="none"/><path d="M70 48 q-11 6 -7 18" stroke="#7d531f" stroke-width="1.8" fill="none"/>' },
+  { fa:'پسته',  en:'pistachio', nut:true, want:'audio/kf_pistachio.mp3', icon:'<ellipse cx="50" cy="56" rx="22" ry="28" fill="#a7cb46"/><ellipse cx="50" cy="52" rx="22" ry="25" fill="#bcdc63"/><path d="M28 46 q22 -22 44 0 q-22 9 -44 0 Z" fill="#efe6cf" stroke="#d8c69a" stroke-width="2.5"/><line x1="50" y1="42" x2="50" y2="74" stroke="#86a531" stroke-width="2.5"/>' },
+  { fa:'بادام', en:'almond', nut:true, want:'audio/kf_almond.mp3', icon:'<path d="M50 12 C70 28 74 60 50 90 C26 60 30 28 50 12 Z" fill="#ecd3a8" stroke="#c9a878" stroke-width="3"/><path d="M50 22 C58 44 58 66 50 84" stroke="#cdab82" stroke-width="2.5" fill="none"/>' },
+];
+const FEED_GOAL = 5;
+let feedScore = 0, feedTarget = null, feedPool = FEED_FOODS, feedMode = 'all';
+
+function startFeed(mode) {
+  feedMode = mode || 'all';
+  feedPool = feedMode === 'nuts' ? FEED_FOODS.filter(f => f.nut) : FEED_FOODS;
+  feedScore = 0;
+  setFeedMeter();
+  document.getElementById('feed-hamster').innerHTML = mascotSVG();
+  go('feed');
+  feedRound();
+}
+function setFeedMeter() {
+  const pct = Math.min(100, Math.round(feedScore / FEED_GOAL * 100));
+  document.getElementById('feed-fill').style.width = pct + '%';
+  document.getElementById('feed-meter-label').textContent =
+    feedScore >= FEED_GOAL ? 'Full! 😋' : `Tummy: ${feedScore}/${FEED_GOAL}`;
+  // her belly rounds out (wider more than taller) as she fills up
+  const f = feedScore / FEED_GOAL;
+  const ham = document.getElementById('feed-hamster');
+  ham.style.transformOrigin = '50% 92%';
+  ham.style.transform = `scale(${(1 + f*0.58).toFixed(3)}, ${(1 + f*0.22).toFixed(3)})`;
+}
+// fly the chosen food in an arc into Koochooloo's mouth, then call done()
+function flyFoodToMouth(btn, food, done) {
+  const ham = document.getElementById('feed-hamster');
+  if (!ham) { done && done(); return; }
+  const br = btn.getBoundingClientRect();
+  const hr = ham.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'flying-food';
+  if (food.icon) fly.innerHTML = `<svg viewBox="0 0 100 100" width="70" height="70">${food.icon}</svg>`;
+  else fly.textContent = food.emoji;
+  fly.style.left = (br.left + br.width/2) + 'px';
+  fly.style.top  = (br.top  + br.height/2) + 'px';
+  fly.style.setProperty('--dx', ((hr.left + hr.width/2) - (br.left + br.width/2)) + 'px');
+  fly.style.setProperty('--dy', ((hr.top  + hr.height*0.62) - (br.top + br.height/2)) + 'px');
+  document.body.appendChild(fly);
+  fly.addEventListener('animationend', () => { fly.remove(); done && done(); }, { once:true });
+  setTimeout(() => { if (fly.parentNode) { fly.remove(); done && done(); } }, 900); // safety
+}
+function feedRound() {
+  const pool = [...feedPool].sort(() => Math.random() - 0.5);
+  // don't ask for the same food twice in a row (both are among the 3 shown)
+  feedTarget = (pool[0] === feedTarget && pool.length > 1) ? pool[1] : pool[0];
+  const options = pool.slice(0, 3).sort(() => Math.random() - 0.5);
+  document.getElementById('feed-bubble').textContent = 'دلم ' + feedTarget.fa + ' می‌خواد!';
+  document.getElementById('feed-en').textContent = 'I want ' + feedTarget.en + '!';
+  const box = document.getElementById('feed-choices');
+  box.innerHTML = '';
+  options.forEach(food => {
+    const b = document.createElement('button');
+    b.className = 'choice';
+    if (food.icon) b.innerHTML = `<svg viewBox="0 0 100 100" width="96" height="96">${food.icon}</svg>`;
+    else b.textContent = food.emoji;
+    b.onclick = () => feedPick(b, food);
+    box.appendChild(b);
+  });
+  later(feedAsk, 400);
+}
+function feedAsk() { if (feedTarget) say({ audio: feedTarget.want }); }
+
+function feedPick(btn, food) {
+  if (food === feedTarget) {
+    const box = document.getElementById('feed-choices');
+    box.style.pointerEvents = 'none';           // no double-taps mid-animation
+    btn.style.visibility = 'hidden';            // the food "leaves" the tray
+    flyFoodToMouth(btn, food, () => {           // arc into her mouth, then:
+      if (screenId !== 'feed') return;          // she left mid-flight
+      const wrap = document.getElementById('feed-hamster-wrap');
+      wrap.classList.remove('chomp'); void wrap.offsetWidth; wrap.classList.add('chomp');
+      say({ audio: 'audio/cc09.mp3' });         // "khoshmaze ast!" (yum!)
+      feedScore++;
+      setFeedMeter();                           // fills meter + grows belly
+      box.style.pointerEvents = '';
+      if (feedScore >= FEED_GOAL) later(feedWin, 850);
+      else later(feedRound, 850);
+    });
+  } else {
+    btn.classList.add('wrong');
+    setTimeout(() => btn.classList.remove('wrong'), 400);
+    later(feedAsk, 500);                        // gently repeat the request
+  }
+}
+function feedWin() {
+  document.getElementById('feed-bubble').textContent = 'سیر شدم، مرسی!';
+  document.getElementById('feed-en').textContent = "I'm full, thank you!";
+  cheerMascot('feed-hamster');
+  confetti();
+  say({ audio: 'audio/kf_full.mp3' });
+  const box = document.getElementById('feed-choices');
+  box.innerHTML = '';
+  const again = document.createElement('button');
+  again.className = 'big-btn btn-green';
+  again.textContent = '↺ Again';
+  again.onclick = () => startFeed(feedMode);
+  box.appendChild(again);
+}
+
+/* ---------- Audio (set up LAST, fully guarded) ----------
+   Plays pre-generated Persian recordings from audio/. If a file
+   fails it falls back to the browser voice. All wrapped in
+   try/catch so audio can never blank the screens.              */
+let player = null, faVoice = null, hasPersian = false, tipShown = false;
+
+function refreshVoices() {
+  try {
+    const voices = speechSynthesis.getVoices() || [];
+    faVoice = voices.find(v => /^fa(-|_)/i.test(v.lang)) || null;
+    hasPersian = !!faVoice;
+  } catch (e) { /* ignore */ }
+}
+function say(phrase) {
+  try {
+    if (phrase && phrase.audio) {
+      if (player) { player.pause(); }
+      player = new Audio(phrase.audio);
+      player.play().catch(() => speakFallback(phrase));
+    } else {
+      speakFallback(phrase);
+    }
+  } catch (e) { /* never let audio break the app */ }
+}
+function speakFallback(phrase) {
+  try {
+    if (!('speechSynthesis' in window) || !phrase) return;
+    if (!faVoice) refreshVoices();
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance();
+    if (hasPersian) { u.text = phrase.fa; u.lang = 'fa-IR'; u.voice = faVoice; }
+    else {
+      u.text = phrase.say || phrase.fa; u.lang = 'en-US';
+      if (!tipShown) { tipShown = true; const t = document.getElementById('voice-tip'); if (t) t.style.display = 'block'; }
+    }
+    u.rate = 0.8;
+    speechSynthesis.speak(u);
+  } catch (e) { /* ignore */ }
+}
+try {
+  if ('speechSynthesis' in window) {
+    refreshVoices();
+    speechSynthesis.onvoiceschanged = refreshVoices;
+  }
+} catch (e) { /* ignore */ }
+</script>
+</body>
+</html>

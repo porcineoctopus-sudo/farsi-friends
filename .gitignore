@@ -1,0 +1,7 @@
+# Python venv used only to run the edge-tts generators (16MB, machine-specific)
+.venv/
+
+# Local Claude Code permission allowlist — specific to this machine
+.claude/settings.local.json
+
+.DS_Store
