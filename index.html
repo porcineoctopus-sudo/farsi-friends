@@ -149,24 +149,27 @@
 
   /* ---- Scene animation. Every piece is an inner <g>, so these transforms
          compose with the placement transform on the parent instead of
-         replacing it. Rotations need an origin, hence transform-box. ---- */
-  #listen-scene .a-bob    { animation: sc-bob 2.6s ease-in-out infinite; }
-  #listen-scene .a-flap   { animation: sc-flap 0.6s ease-in-out infinite;
+         replacing it. Rotations need an origin, hence transform-box.
+
+         A scene can hold for six minutes, so the energetic movements are
+         FINITE: they play out over a few seconds when the picture arrives and
+         then settle. Only the slow tail-stir and the drifting music notes
+         loop, because those stay quiet enough to live with. ---- */
+  #listen-scene .a-flap   { animation: sc-flap 0.6s ease-in-out 8;
                             transform-box: fill-box; transform-origin: 90% 60%; }
-  #listen-scene .a-swish  { animation: sc-swish 2.2s ease-in-out infinite;
+  #listen-scene .a-swish  { animation: sc-swish 6.5s ease-in-out infinite;
                             transform-box: fill-box; transform-origin: 100% 50%; }
   #listen-scene .a-note   { animation: sc-note 2.4s ease-out infinite; }
-  #listen-scene .a-pulse  { animation: sc-pulse 1.6s ease-in-out infinite;
+  #listen-scene .a-pulse  { animation: sc-pulse 1.6s ease-in-out 3;
                             transform-box: fill-box; transform-origin: 50% 50%; }
-  #listen-scene .a-shake  { animation: sc-shake 0.32s ease-in-out infinite; }
-  #listen-scene .a-run    { animation: sc-run 0.42s ease-in-out infinite; }
+  #listen-scene .a-shake  { animation: sc-shake 0.32s ease-in-out 9; }
+  #listen-scene .a-run    { animation: sc-run 0.42s ease-in-out 12; }
   #listen-scene .a-rise   { animation: sc-rise 14s ease-out forwards; }
-  #listen-scene .a-fall   { animation: sc-fall 5s ease-in-out infinite; }
-  #listen-scene .a-wobble { animation: sc-wobble 1.4s ease-in-out infinite;
+  #listen-scene .a-fall   { animation: sc-fall 5s ease-in-out 2 forwards; }
+  #listen-scene .a-wobble { animation: sc-wobble 1.4s ease-in-out 4;
                             transform-box: fill-box; transform-origin: 50% 100%; }
-  @keyframes sc-bob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
   @keyframes sc-flap  { 0%,100% { transform: rotate(0deg); }  50% { transform: rotate(-26deg); } }
-  @keyframes sc-swish { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(7deg); } }
+  @keyframes sc-swish { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2.5deg); } }
   @keyframes sc-note  { 0% { transform: translateY(6px); opacity:0; }
                         25% { opacity:.95; } 100% { transform: translateY(-30px); opacity:0; } }
   @keyframes sc-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.22); } }
@@ -1003,13 +1006,12 @@ function endStory() {
 /* Placement lives on the outer <g> as an attribute; animation goes on an inner
    <g> via CSS. They have to be separate elements — a CSS transform on the outer
    group would override the attribute and throw the piece across the picture.
-   `cls` defaults to a gentle idle bob, so everything on stage is faintly alive. */
+   Nothing moves by default. Idle motion on every character, every second of a
+   48-minute recording, reads as fidgeting rather than life — so animation is
+   opt-in and reserved for things the story is actually doing. */
 const G = (x, y, s, flip, inner, cls) =>
   `<g transform="translate(${x},${y}) scale(${flip ? -s : s},${s})">` +
-  `<g class="${cls === undefined ? 'a-bob' : cls}">${inner}</g></g>`;
-/* Staggered so the cast doesn't bob in lockstep like a chorus line */
-let bobSeq = 0;
-const BOB = () => `a-bob" style="animation-delay:${(((++bobSeq) * 370) % 1600) / 1000}s`;
+  `<g class="${cls || ''}">${inner}</g></g>`;
 
 function sSky(a, b) {
   return `<rect x="0" y="0" width="400" height="240" fill="${a}"/>
@@ -1119,8 +1121,7 @@ const SCENES = {
   cabin: () => sSky('#bfe3f5', '#79b45f') + sSun(340, 46, 26, '#ffd86b') +
     sTree(40, 200, 1.15) + sTree(90, 208, .85) + sTree(360, 204, 1) +
     sCabin(215, 190, 1, true) +
-    sRooster(150, 214, 1.5, false, false, BOB()) +
-    sCat(255, 216, 1.35, true, BOB()) + sLark(300, 214, 1.4, true, BOB()),
+    sRooster(150, 214, 1.5, false) + sCat(255, 216, 1.35, true) + sLark(300, 214, 1.4, true),
   /* the lark takes the cat aside */
   warning: () => sSky('#a9d8ef', '#6fa957') + sTree(30, 206, 1) + sTree(370, 200, 1.1) +
     sCabin(320, 196, .8, false) +
@@ -1210,8 +1211,7 @@ const SCENES = {
   /* all three home again, hand in hand */
   victory: () => sSky('#ffe6b0', '#7fb862') + sSun(60, 56, 30, '#ffcf5c') +
     sTree(340, 204, 1.05) + sCabin(320, 192, .75, true) +
-    sRooster(120, 216, 1.5, false, true, BOB()) +
-    sCat(190, 218, 1.45, false, BOB()) + sLark(248, 214, 1.5, false, BOB()) +
+    sRooster(120, 216, 1.5, false, true) + sCat(190, 218, 1.45, false) + sLark(248, 214, 1.5, false) +
     NOTES(96, 122, '#b45309'),
 };
 
