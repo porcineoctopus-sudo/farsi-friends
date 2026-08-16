@@ -25,13 +25,49 @@ Four vocabulary themes, each with a **Learn** grid (tap a card to hear the word)
 Plus:
 
 - **🎬 Stories** — short illustrated conversations with a branch point where the
-  child picks Koochooloo's reply. Two so far: *Meet the Cat* and *At the Park*.
+  child picks a reply. Three so far: *Meet the Cat*, *At the Park*, and
+  *The Golden Rooster*.
 - **🥕 Feed Me! / 🥜 Nuts!** — listen to what Koochooloo asks for and feed her;
   her tummy meter fills and she visibly rounds out.
 
 Every word and line is a pre-generated neural Persian recording, so it sounds like a
 person rather than a robot. If a recording can't load, the app falls back to the
 device voice.
+
+### The Golden Rooster
+
+*The Golden Rooster* retells Ahmad Shamlou's **«خروس زری پیرهن پری»** at beginner
+level — the plot and characters are his, the wording is ours, kept to words the app
+teaches elsewhere. The fox flatters the rooster to lure him close and the cat saves him.
+
+Shamlou's own recording (with Babak Bayat's music) is **not part of this repo**. It is
+copyrighted, and publishing it here would be redistribution. If you keep a personal
+copy at `audio/original/kz_part1.mp3` and `kz_part2.mp3`, a *"🎧 Hear the real story"*
+button appears on that story and plays it as continuous story-time audio, separate from
+the tap-through learning lines. Without those files the button stays hidden, which is
+why the public site never shows it. `audio/original/` is gitignored — keep it that way.
+
+Story time also shows **English subtitles** and a **picture that changes with the
+scene**, both driven by `audio/original/kz_story.json` (also local-only):
+
+```jsonc
+{ "kz_part1": {
+    "subs":   [[54, "Once upon a time, there was no one — but God."], ...],
+    "scenes": [[0, "cabin"], [174, "warning"], ...] } }
+```
+
+`subs` is `[second, english]`; `scenes` is `[second, sceneName]` naming an entry in the
+`SCENES` object in `index.html`. Both lists must be sorted by time. The English is a
+translation made for this app, working from YouTube's Persian auto-captions for the
+timings — it is not Shamlou's text and makes no claim to be. The thirteen scene
+illustrations are drawn in `index.html` from a shared set of pieces (`sCabin`, `sFox`,
+`sRooster`, `sCat`, `sTorqe`, `sTree`…), all on a `0 0 400 240` viewBox; they are
+original drawings, not the book's — Farshid Mesghali's illustrations are copyrighted,
+and the recording's video track is only a still of the cover in any case.
+
+Both recordings are trimmed to where the story actually ends. The source uploads carry
+a publisher's jingle and several unrelated stories after it, which is why part 2 stops
+at 21:55.
 
 ## Running it locally
 
@@ -41,6 +77,15 @@ browser loading the mp3s:
 ```sh
 python3 -m http.server 8777
 open http://127.0.0.1:8777/index.html
+```
+
+To reach it from an iPad on the same wifi — which is how you get the story-time audio,
+since that never goes to the public site — serve on all interfaces and use this Mac's
+LAN address:
+
+```sh
+python3 -m http.server 8777 --bind 0.0.0.0
+ipconfig getifaddr en0          # e.g. 192.168.1.24 -> http://192.168.1.24:8777
 ```
 
 ## Regenerating the audio
@@ -56,7 +101,19 @@ python3 -m venv .venv
 ```
 
 `gen_audio.py` holds the word lists; `gen_convo.py` holds the story and game lines
-with a per-character voice and pitch.
+with a per-character voice and pitch. Persian edge-tts offers only two voices, so the
+four characters are pitch-separated pairs:
+
+| Character | Voice | Pitch |
+|---|---|---|
+| Koochooloo the hamster | Dilara | +60Hz |
+| Khoroos Zari the rooster | Dilara | +15Hz |
+| the Cat | Farid | +25Hz |
+| the Fox | Farid | −30Hz |
+
+Both scripts rewrite every file they know about. To add just a few lines without
+re-downloading the rest, exec the source up to `async def main` to borrow the voice
+constants and generate only your new entries.
 
 ### A note on spelling
 

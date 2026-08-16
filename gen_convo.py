@@ -1,6 +1,10 @@
 import asyncio, edge_tts
 H, HP = "fa-IR-DilaraNeural", "+60Hz"   # Koochooloo the hamster (cute, high)
 C, CP = "fa-IR-FaridNeural",  "+25Hz"   # the Cat (cute cartoon)
+# Persian edge-tts has only these two voices, so the rooster and the fox are
+# pitch-separated from the pair above rather than being new voices.
+R, RP = "fa-IR-DilaraNeural", "+15Hz"   # Khoroos Zari the rooster (proud, brighter than the cat)
+F, FP = "fa-IR-FaridNeural",  "-30Hz"   # the Fox (low and sly)
 # (text, voice, pitch, filename)
 LINES = [
     ("سلام!",                  H, HP, "cc01.mp3"),
@@ -29,6 +33,21 @@ LINES = [
     ("خداحافظ پارک!",           C, CP, "pk09.mp3"),
     ("امروز خیلی خوب بود!",      H, HP, "pk10.mp3"),
     ("بله! خداحافظ!",           C, CP, "pk11.mp3"),
+    # Story 3 — the golden rooster and the fox (after Shamlou's «خروس زری پیرهن پری»)
+    ("قوقولی قو! صبح بخیر!",      R, RP, "kz01.mp3"),
+    ("سلام خروس زری!",            C, CP, "kz02.mp3"),
+    ("سلام! تو خیلی قشنگ هستی.",  F, FP, "kz03.mp3"),
+    ("بیا نزدیک، بیا!",           F, FP, "kz04.mp3"),
+    ("نه! تو روباه هستی!",        R, RP, "kz05a.mp3"),
+    ("باشه، آمدم!",               R, RP, "kz05b.mp3"),
+    ("نرو! روباه بد است!",        C, CP, "kz06.mp3"),
+    ("گرفتمت!",                   F, FP, "kz07.mp3"),
+    ("کمک! کمک!",                 R, RP, "kz08.mp3"),
+    ("ولش کن! برو!",              C, CP, "kz09.mp3"),
+    ("آخ! خداحافظ!",              F, FP, "kz10.mp3"),
+    ("مرسی! تو دوست خوبی هستی.",  R, RP, "kz11.mp3"),
+    ("خواهش می‌کنم!",             C, CP, "kz12.mp3"),
+    ("قوقولی قو!",                R, RP, "kz13.mp3"),
     # Koochooloo's personality catchphrases (always hungry / loves her wheel)
     ("گرسنه هستم!",            H, HP, "k_hungry.mp3"),
     ("یه چیزی بخوریم؟",         H, HP, "k_eat.mp3"),

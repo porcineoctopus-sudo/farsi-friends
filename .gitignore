@@ -5,3 +5,9 @@
 .claude/settings.local.json
 
 .DS_Store
+
+# Ahmad Shamlou's original "خروس زری پیرهن پری" recording (music by Babak Bayat).
+# Copyrighted and NOT ours to publish — this is a personal family copy that must
+# stay on the local machine. The app serves it only when run from a local server;
+# the GitHub Pages build simply doesn't have it and hides the button.
+audio/original/
