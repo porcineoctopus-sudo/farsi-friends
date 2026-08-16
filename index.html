@@ -145,6 +145,44 @@
   /* Fixed height for two lines, so the picture doesn't jump as subtitles change */
   #listen-sub { width:min(88vw,460px); min-height:3.1em; margin:10px 0 2px; padding:0 6px;
                 font-size:19px; line-height:1.45; text-align:center; font-weight:600; }
+  #listen-sub.sung { font-style:italic; color:#6b4ea8; }
+
+  /* ---- Scene animation. Every piece is an inner <g>, so these transforms
+         compose with the placement transform on the parent instead of
+         replacing it. Rotations need an origin, hence transform-box. ---- */
+  #listen-scene .a-bob    { animation: sc-bob 2.6s ease-in-out infinite; }
+  #listen-scene .a-flap   { animation: sc-flap 0.6s ease-in-out infinite;
+                            transform-box: fill-box; transform-origin: 90% 60%; }
+  #listen-scene .a-swish  { animation: sc-swish 2.2s ease-in-out infinite;
+                            transform-box: fill-box; transform-origin: 100% 50%; }
+  #listen-scene .a-note   { animation: sc-note 2.4s ease-out infinite; }
+  #listen-scene .a-pulse  { animation: sc-pulse 1.6s ease-in-out infinite;
+                            transform-box: fill-box; transform-origin: 50% 50%; }
+  #listen-scene .a-shake  { animation: sc-shake 0.32s ease-in-out infinite; }
+  #listen-scene .a-run    { animation: sc-run 0.42s ease-in-out infinite; }
+  #listen-scene .a-rise   { animation: sc-rise 14s ease-out forwards; }
+  #listen-scene .a-fall   { animation: sc-fall 5s ease-in-out infinite; }
+  #listen-scene .a-wobble { animation: sc-wobble 1.4s ease-in-out infinite;
+                            transform-box: fill-box; transform-origin: 50% 100%; }
+  @keyframes sc-bob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @keyframes sc-flap  { 0%,100% { transform: rotate(0deg); }  50% { transform: rotate(-26deg); } }
+  @keyframes sc-swish { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(7deg); } }
+  @keyframes sc-note  { 0% { transform: translateY(6px); opacity:0; }
+                        25% { opacity:.95; } 100% { transform: translateY(-30px); opacity:0; } }
+  @keyframes sc-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.22); } }
+  @keyframes sc-shake { 0%,100% { transform: translate(0,0); } 25% { transform: translate(-3px,1px); }
+                        75% { transform: translate(3px,-1px); } }
+  @keyframes sc-run   { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-4px,-2px); } }
+  @keyframes sc-rise  { 0% { transform: translateY(34px); } 100% { transform: translateY(0); } }
+  @keyframes sc-fall  { 0% { transform: translate(0,-4px) rotate(-8deg); opacity:.85; }
+                        100% { transform: translate(3px,5px) rotate(10deg); opacity:1; } }
+  @keyframes sc-wobble{ 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+  /* Each new scene fades up rather than cutting */
+  #listen-scene.fade { animation: sc-in .55s ease; }
+  @keyframes sc-in { from { opacity:0; } to { opacity:1; } }
+  @media (prefers-reduced-motion: reduce) {
+    #listen-scene * { animation: none !important; }
+  }
   #listen-parts { display:flex; gap:10px; margin:6px 0 14px; }
   .part-btn { padding:8px 18px; border:2px solid #6b4ea8; border-radius:999px; background:#fff;
               color:#6b4ea8; font-size:16px; font-weight:600; cursor:pointer; }
@@ -962,8 +1000,16 @@ function endStory() {
    Drawn rather than taken from the book: Farshid Mesghali's illustrations are
    copyrighted, and the recording's video track is just a still of the cover. All
    scenes share a 400x240 viewBox and are built from the same handful of pieces. */
-const G = (x, y, s, flip, inner) =>
-  `<g transform="translate(${x},${y}) scale(${flip ? -s : s},${s})">${inner}</g>`;
+/* Placement lives on the outer <g> as an attribute; animation goes on an inner
+   <g> via CSS. They have to be separate elements — a CSS transform on the outer
+   group would override the attribute and throw the piece across the picture.
+   `cls` defaults to a gentle idle bob, so everything on stage is faintly alive. */
+const G = (x, y, s, flip, inner, cls) =>
+  `<g transform="translate(${x},${y}) scale(${flip ? -s : s},${s})">` +
+  `<g class="${cls === undefined ? 'a-bob' : cls}">${inner}</g></g>`;
+/* Staggered so the cast doesn't bob in lockstep like a chorus line */
+let bobSeq = 0;
+const BOB = () => `a-bob" style="animation-delay:${(((++bobSeq) * 370) % 1600) / 1000}s`;
 
 function sSky(a, b) {
   return `<rect x="0" y="0" width="400" height="240" fill="${a}"/>
@@ -976,7 +1022,7 @@ function sTree(x, y, s) {
   return G(x, y, s, false, `
     <rect x="-5" y="0" width="10" height="26" fill="#7b5433"/>
     <path d="M0 -66 L26 -22 L-26 -22 Z" fill="#2f7d4f"/>
-    <path d="M0 -46 L30 4 L-30 4 Z" fill="#3b9560"/>`);
+    <path d="M0 -46 L30 4 L-30 4 Z" fill="#3b9560"/>`, '');   // trees stay put
 }
 function sCabin(x, y, s, lit) {
   return G(x, y, s, false, `
@@ -986,24 +1032,27 @@ function sCabin(x, y, s, lit) {
     <line x1="-52" y1="-6" x2="52" y2="-6" stroke="#8a5f36" stroke-width="2"/>
     <rect x="-38" y="-30" width="30" height="26" fill="${lit ? '#ffe6a3' : '#5b6b7a'}" stroke="#6f4526" stroke-width="3"/>
     <line x1="-23" y1="-30" x2="-23" y2="-4" stroke="#6f4526" stroke-width="2"/>
-    <rect x="12" y="-16" width="24" height="34" fill="#6f4526"/>`);
+    <rect x="12" y="-16" width="24" height="34" fill="#6f4526"/>`, '');   // the cabin stays put
 }
-function sRooster(x, y, s, flip) {
+function sRooster(x, y, s, flip, wing, cls) {
   return G(x, y, s, flip, `
-    <path d="M-14 -14 q-16 -8 -14 -26 q9 12 16 16 Z" fill="#3f9c63"/>
-    <path d="M-13 -10 q-18 -3 -21 -20 q10 9 19 12 Z" fill="#57b57c"/>
+    <g class="a-swish">
+      <path d="M-14 -14 q-16 -8 -14 -26 q9 12 16 16 Z" fill="#3f9c63"/>
+      <path d="M-13 -10 q-18 -3 -21 -20 q10 9 19 12 Z" fill="#57b57c"/>
+    </g>
     <ellipse cx="0" cy="-12" rx="18" ry="16" fill="#e8b33f"/>
+    ${wing ? '<g class="a-flap"><path d="M-6 -18 q14 -10 22 2 q-12 10 -22 2 Z" fill="#d19a2c"/></g>' : ''}
     <circle cx="12" cy="-30" r="11" fill="#f0bf4c"/>
     <path d="M5 -39 q2 -7 5 -2 q2 -7 5 -1 q3 -5 4 2 q-7 4 -14 1 Z" fill="#e0503f"/>
     <path d="M23 -30 L33 -27 L23 -24 Z" fill="#f39c2b"/>
     <path d="M21 -24 q4 5 -1 7 q-4 -2 -3 -6 Z" fill="#e0503f"/>
     <circle cx="17" cy="-32" r="2.6" fill="#2b2030"/>
     <path d="M-4 4 v6 M-4 10 l-4 3 M-4 10 l4 3" stroke="#f39c2b" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-    <path d="M6 4 v6 M6 10 l-4 3 M6 10 l4 3" stroke="#f39c2b" stroke-width="2.4" fill="none" stroke-linecap="round"/>`);
+    <path d="M6 4 v6 M6 10 l-4 3 M6 10 l4 3" stroke="#f39c2b" stroke-width="2.4" fill="none" stroke-linecap="round"/>`, cls);
 }
-function sCat(x, y, s, flip) {
+function sCat(x, y, s, flip, cls) {
   return G(x, y, s, flip, `
-    <path d="M-16 0 q-16 -4 -18 -20" stroke="#aab4c0" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <g class="a-swish"><path d="M-16 0 q-16 -4 -18 -20" stroke="#aab4c0" stroke-width="6" fill="none" stroke-linecap="round"/></g>`+`
     <ellipse cx="0" cy="-10" rx="17" ry="14" fill="#aab4c0"/>
     <circle cx="8" cy="-28" r="12" fill="#aab4c0"/>
     <path d="M-1 -38 L-3 -47 L6 -41 Z" fill="#9aa6b2"/>
@@ -1013,11 +1062,11 @@ function sCat(x, y, s, flip) {
     <circle cx="13" cy="-31" r="2.4" fill="#2b3a2a"/>
     <path d="M6 -25 L11 -25 L8.5 -22 Z" fill="#e58aa0"/>
     <ellipse cx="-6" cy="3" rx="5" ry="3" fill="#9aa6b2"/>
-    <ellipse cx="7" cy="3" rx="5" ry="3" fill="#9aa6b2"/>`);
+    <ellipse cx="7" cy="3" rx="5" ry="3" fill="#9aa6b2"/>`, cls);
 }
-function sFox(x, y, s, flip) {
+function sFox(x, y, s, flip, cls) {
   return G(x, y, s, flip, `
-    <path d="M-15 -2 q-20 -2 -22 -22 q12 12 22 14 Z" fill="#e07b3c"/>
+    <g class="a-swish"><path d="M-15 -2 q-20 -2 -22 -22 q12 12 22 14 Z" fill="#e07b3c"/></g>`+`
     <ellipse cx="0" cy="-11" rx="18" ry="14" fill="#e88a45"/>
     <circle cx="11" cy="-29" r="12" fill="#ee9550"/>
     <path d="M2 -39 L0 -50 L10 -42 Z" fill="#e07b3c"/>
@@ -1026,58 +1075,78 @@ function sFox(x, y, s, flip) {
     <ellipse cx="30" cy="-22" rx="2.6" ry="2" fill="#2b2030"/>
     <path d="M4 -32 q6 -4 11 0 q-6 3 -11 0 Z" fill="#2b2030"/>
     <ellipse cx="-4" cy="2" rx="5" ry="3" fill="#d9762f"/>
-    <ellipse cx="8" cy="2" rx="5" ry="3" fill="#d9762f"/>`);
+    <ellipse cx="8" cy="2" rx="5" ry="3" fill="#d9762f"/>`, cls);
 }
-function sTorqe(x, y, s, flip) {
+/* The lark (طرقه / چکاوک) — drawn as a crested lark, the one you actually meet
+   in Iran: sandy and streaked, with the upright crest that names it. */
+function sLark(x, y, s, flip, cls) {
   return G(x, y, s, flip, `
-    <path d="M-10 -6 q-13 0 -16 -10 q9 3 16 3 Z" fill="#5d6b7d"/>
-    <ellipse cx="0" cy="-10" rx="12" ry="10" fill="#6d7c90"/>
-    <ellipse cx="0" cy="-7" rx="7" ry="6" fill="#c9a94f"/>
-    <circle cx="8" cy="-20" r="8" fill="#6d7c90"/>
-    <path d="M15 -19 L24 -17 L15 -15 Z" fill="#e6b34a"/>
-    <circle cx="11" cy="-22" r="2" fill="#22282f"/>
-    <path d="M-2 0 v4 M4 0 v4" stroke="#e6b34a" stroke-width="2" stroke-linecap="round"/>`);
+    <g class="a-swish">
+      <path d="M-10 -6 q-14 0 -18 -9 q10 3 18 2 Z" fill="#8f6a42"/>
+      <path d="M-12 -8 q-11 -1 -14 -6 q8 2 14 2 Z" fill="#f0e2c8"/>
+    </g>`+`
+    <ellipse cx="0" cy="-10" rx="12" ry="10" fill="#b98f5e"/>
+    <ellipse cx="1" cy="-7" rx="7.5" ry="6.5" fill="#f2e6cf"/>
+    <path d="M-7 -16 q4 2 7 1 M-4 -12 q4 2 8 1 M-8 -11 q3 2 6 1"
+          stroke="#8a6236" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <circle cx="8" cy="-20" r="8" fill="#c19765"/>
+    <path d="M2 -25 q2 -8 7 -9 q-1 5 -2 7 Z" fill="#a97f4e"/>
+    <path d="M6 -26 q3 -7 8 -7 q-2 4 -4 6 Z" fill="#b98f5e"/>
+    <path d="M15 -19 q7 1 11 2 q-4 2 -11 2 Z" fill="#d8b47a"/>
+    <path d="M3 -23 q6 -2 10 0" stroke="#f2e6cf" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <circle cx="11" cy="-21" r="2.1" fill="#22282f"/>
+    <circle cx="11.8" cy="-21.7" r=".7" fill="#fff"/>
+    <path d="M-2 0 v4 M4 0 v4" stroke="#d8b47a" stroke-width="2" stroke-linecap="round"/>`, cls);
 }
-function sSaz(x, y, s, flip) {
+function sSaz(x, y, s, flip, cls) {
   return G(x, y, s, flip, `
     <ellipse cx="0" cy="0" rx="9" ry="12" fill="#a9713c" stroke="#7d5127" stroke-width="2"/>
     <rect x="6" y="-3" width="28" height="4" rx="2" fill="#7d5127" transform="rotate(-28 6 -1)"/>
-    <circle cx="0" cy="-1" r="3" fill="#5e3a1a"/>`);
+    <circle cx="0" cy="-1" r="3" fill="#5e3a1a"/>`, cls);
 }
-const NOTES = `<text x="0" y="0" font-size="22" fill="#6b4ea8" opacity=".85">♪</text>`;
+/* A note that drifts up and fades. Staggered delays make a stream of them. */
+const NOTE = (x, y, size, color, delay) =>
+  `<text x="${x}" y="${y}" font-size="${size}" fill="${color}" class="a-note"` +
+  ` style="animation-delay:${delay}s">♪</text>`;
+const NOTES = (x, y, color) =>
+  NOTE(x, y, 24, color, 0) + NOTE(x + 26, y - 20, 19, color, .8) + NOTE(x + 48, y + 4, 15, color, 1.6);
+/* An emoji accent that throbs (or whatever `cls` says) */
+const EMO = (x, y, size, ch, cls) =>
+  `<text x="${x}" y="${y}" font-size="${size}" class="${cls || 'a-pulse'}">${ch}</text>`;
 
 const SCENES = {
   /* the three friends at home in the forest */
   cabin: () => sSky('#bfe3f5', '#79b45f') + sSun(340, 46, 26, '#ffd86b') +
     sTree(40, 200, 1.15) + sTree(90, 208, .85) + sTree(360, 204, 1) +
     sCabin(215, 190, 1, true) +
-    sRooster(150, 214, 1.5, false) + sCat(255, 216, 1.35, true) + sTorqe(300, 214, 1.4, true),
-  /* the torqe takes the cat aside */
+    sRooster(150, 214, 1.5, false, false, BOB()) +
+    sCat(255, 216, 1.35, true, BOB()) + sLark(300, 214, 1.4, true, BOB()),
+  /* the lark takes the cat aside */
   warning: () => sSky('#a9d8ef', '#6fa957') + sTree(30, 206, 1) + sTree(370, 200, 1.1) +
     sCabin(320, 196, .8, false) +
-    sCat(140, 214, 1.9, false) + sTorqe(210, 210, 1.9, true) +
-    `<text x="175" y="120" font-size="26" text-anchor="middle" opacity=".7">🦊</text>
-     <path d="M150 132 q25 14 50 0" stroke="#4a5568" stroke-width="2.5" fill="none" stroke-dasharray="5 5"/>`,
+    sCat(140, 214, 1.9, false) + sLark(210, 210, 1.9, true) +
+    EMO(162, 122, 26, '🦊') +
+    `<path d="M150 132 q25 14 50 0" stroke="#4a5568" stroke-width="2.5" fill="none" stroke-dasharray="5 5"/>`,
   /* the rooster sings the dawn up */
-  sunrise: () => sSky('#ffd9a8', '#7fb862') + sSun(320, 70, 34, '#ffb347') +
+  /* he crows: wings beating, notes streaming, and the sun climbing behind him */
+  sunrise: () => sSky('#ffd9a8', '#7fb862') +
+    `<g class="a-rise">${sSun(320, 70, 34, '#ffb347')}</g>` +
     sTree(46, 202, 1) + sTree(368, 206, .9) +
     sCabin(200, 194, 1.05, true) +
-    sRooster(163, 168, 1.25, false) +
-    `<g opacity=".85"><text x="248" y="120" font-size="24" fill="#c2410c">♪</text>
-     <text x="276" y="98" font-size="20" fill="#c2410c">♪</text>
-     <text x="300" y="122" font-size="16" fill="#c2410c">♪</text></g>`,
+    sRooster(163, 168, 1.25, false, true) +
+    NOTES(240, 124, '#c2410c'),
   /* the fox across the river, cursing */
   foxAngry: () => sSky('#bcd9ee', '#6fa957') +
     `<path d="M0 196 q100 -22 200 0 q100 22 200 0 v44 H0 Z" fill="#5aa9d6"/>` +
     sTree(360, 190, 1) +
-    sFox(96, 200, 2.1, false) +
-    `<text x="180" y="86" font-size="30">😠</text>
-     <path d="M160 120 l14 -12 M186 120 l-14 -12" stroke="#c0392b" stroke-width="3"/>` +
+    `<g class="a-shake">${sFox(96, 200, 2.1, false)}</g>` +
+    EMO(164, 86, 30, '😠') +
+    `<path d="M160 120 l14 -12 M186 120 l-14 -12" stroke="#c0392b" stroke-width="3"/>` +
     sCabin(330, 178, .62, false),
-  /* the cat and torqe leave for firewood */
+  /* the cat and lark leave for firewood */
   leaving: () => sSky('#c7e6f7', '#79b45f') + sTree(24, 204, 1.1) + sTree(74, 210, .8) +
     sTree(150, 206, .95) + sCabin(330, 192, .85, true) +
-    sCat(110, 214, 1.5, false) + sTorqe(170, 210, 1.5, false) +
+    sCat(110, 214, 1.5, false) + sLark(170, 210, 1.5, false) +
     `<path d="M96 196 l-12 -16 l6 -4 l12 16 Z" fill="#8a5f36"/>
      <path d="M84 180 l-9 -8 l7 -7 l9 8 Z" fill="#9aa6b2"/>` +
     sRooster(300, 180, .95, true),
@@ -1092,61 +1161,58 @@ const SCENES = {
       <path d="M18 -19 L27 -14 L17 -13 Z" fill="#f39c2b"/>
       <path d="M12 -26 q4 3 8 1" stroke="#2b2030" stroke-width="2" fill="none" stroke-linecap="round"/>
       <path d="M-4 4 v6 M6 4 v6" stroke="#f39c2b" stroke-width="2.4" stroke-linecap="round"/>`) +
-    sCat(216, 218, 1.4, true) + sTorqe(258, 214, 1.4, true) +
+    sCat(216, 218, 1.4, true) + sLark(258, 214, 1.4, true) +
     `<text x="118" y="128" font-size="22">😔</text>`,
   /* the fox plays her saz beneath the window */
   serenade: () => sSky('#a9d8ef', '#6fa957') + sTree(28, 204, 1) +
     sCabin(150, 196, 1.15, true) +
     sRooster(112, 168, 1.05, false) +
     sFox(268, 214, 1.9, true) + sSaz(240, 190, 1.5, true) +
-    `<g opacity=".85"><text x="212" y="140" font-size="22" fill="#6b4ea8">♪</text>
-     <text x="192" y="116" font-size="18" fill="#6b4ea8">♪</text></g>`,
+    NOTES(178, 142, '#6b4ea8'),
   /* the fox carries the rooster off */
+  /* she bolts for the den with him under her arm */
   grab: () => sSky('#f3cdb0', '#6fa957') + sTree(340, 200, 1.05) + sTree(30, 206, .9) +
     sCabin(80, 194, .7, false) +
-    sFox(250, 216, 2.2, false) +
-    sRooster(228, 196, 1.15, true) +
-    `<text x="292" y="120" font-size="26">💨</text>
-     <text x="180" y="112" font-size="24">❗</text>`,
-  /* the cat and torqe set about the fox */
+    sFox(250, 216, 2.2, false, 'a-run') +
+    sRooster(228, 196, 1.15, true, false, 'a-run') +
+    EMO(292, 120, 26, '💨') + EMO(180, 112, 24, '❗'),
+  /* the cat and lark set about the fox */
+  /* the whole scuffle judders */
   rescue: () => sSky('#ffe1b8', '#79b45f') + sTree(360, 204, .9) +
-    sFox(210, 218, 2.1, false) +
-    sCat(120, 218, 1.7, false) + sTorqe(300, 196, 1.7, true) +
+    `<g class="a-shake">` +
+      sFox(210, 218, 2.1, false, '') +
+      sCat(120, 218, 1.7, false, '') + sLark(300, 196, 1.7, true, '') +
+    `</g>` +
     sRooster(58, 216, 1.1, false) +
-    `<text x="150" y="128" font-size="26">💥</text>
-     <text x="262" y="118" font-size="24">💥</text>`,
+    EMO(150, 128, 26, '💥') + EMO(262, 118, 24, '💥'),
   /* the open window and the scattered feathers */
   emptyWindow: () => sSky('#9cc2da', '#6fa957') + sTree(36, 202, 1) + sTree(366, 206, .9) +
     sCabin(200, 194, 1.25, false) +
     `<g opacity=".95">
-       <path d="M150 206 q8 -12 16 -3 q-8 9 -16 3 Z" fill="#e8b33f"/>
-       <path d="M176 214 q9 -11 16 -1 q-9 8 -16 1 Z" fill="#f0bf4c"/>
-       <path d="M206 208 q8 -12 15 -2 q-8 9 -15 2 Z" fill="#e8b33f"/>
-     </g>
-     <text x="286" y="128" font-size="26">❓</text>` +
-    sCat(96, 218, 1.3, false) + sTorqe(132, 216, 1.3, false),
+       <g class="a-fall" style="animation-delay:0s"><path d="M150 206 q8 -12 16 -3 q-8 9 -16 3 Z" fill="#e8b33f"/></g>
+       <g class="a-fall" style="animation-delay:1.7s"><path d="M176 214 q9 -11 16 -1 q-9 8 -16 1 Z" fill="#f0bf4c"/></g>
+       <g class="a-fall" style="animation-delay:3.1s"><path d="M206 208 q8 -12 15 -2 q-8 9 -15 2 Z" fill="#e8b33f"/></g>
+     </g>` + EMO(286, 128, 26, '❓') +
+    sCat(96, 218, 1.3, false) + sLark(132, 216, 1.3, false),
   /* the cat sings the fox out of her den */
   lure: () => sSky('#b9d3e6', '#6d9c56') +
     `<path d="M250 200 q40 -76 116 -60 v100 H250 Z" fill="#8a7f6d"/>
      <ellipse cx="286" cy="196" rx="30" ry="34" fill="#3d3730"/>` +
     sTree(40, 204, 1.1) +
     sCat(150, 218, 1.8, false) + sSaz(184, 190, 1.6, false) +
-    sTorqe(300, 138, 1.5, true) +
-    `<path d="M312 128 l14 -12 l7 7 l-14 12 Z" fill="#9aa6b2"/>
-     <g opacity=".85"><text x="216" y="150" font-size="22" fill="#6b4ea8">♪</text>
-     <text x="240" y="126" font-size="18" fill="#6b4ea8">♪</text></g>`,
+    sLark(300, 138, 1.5, true) +
+    `<path d="M312 128 l14 -12 l7 7 l-14 12 Z" fill="#9aa6b2"/>` +
+    NOTES(214, 152, '#6b4ea8'),
   /* the fox limps home in pieces */
   foxBeaten: () => sSky('#8fa9c0', '#5f8f4e') + sTree(40, 204, 1) + sTree(350, 208, .9) +
-    sFox(200, 218, 2.1, false) +
-    `<text x="150" y="120" font-size="24">💫</text>
-     <text x="252" y="132" font-size="22">🤕</text>`,
+    sFox(200, 218, 2.1, false, 'a-wobble') +
+    EMO(150, 120, 24, '💫') + EMO(252, 132, 22, '🤕'),
   /* all three home again, hand in hand */
   victory: () => sSky('#ffe6b0', '#7fb862') + sSun(60, 56, 30, '#ffcf5c') +
     sTree(340, 204, 1.05) + sCabin(320, 192, .75, true) +
-    sRooster(120, 216, 1.5, false) + sCat(190, 218, 1.45, false) + sTorqe(248, 214, 1.5, false) +
-    `<g opacity=".9"><text x="96" y="120" font-size="22" fill="#b45309">♪</text>
-     <text x="160" y="104" font-size="20" fill="#b45309">♪</text>
-     <text x="222" y="118" font-size="18" fill="#b45309">♪</text></g>`,
+    sRooster(120, 216, 1.5, false, true, BOB()) +
+    sCat(190, 218, 1.45, false, BOB()) + sLark(248, 214, 1.5, false, BOB()) +
+    NOTES(96, 122, '#b45309'),
 };
 
 /* ---------- Story time: the original recording ---------- */
@@ -1255,13 +1321,22 @@ function taleSync() {
   const i = taleAt(cues.subs, t);
   if (i !== taleSubIdx) {
     taleSubIdx = i;
-    subBox.textContent = i < 0 ? '' : cues.subs[i][1];
+    const cue = i < 0 ? null : cues.subs[i];
+    // A third element flags a sung line. Songs are held a whole verse-line at a
+    // time — the recording's timings are least exact under the music — so mark
+    // them as lyrics rather than pretending to track them word by word.
+    subBox.textContent = cue ? (cue[2] ? '♪ ' + cue[1] + ' ♪' : cue[1]) : '';
+    subBox.classList.toggle('sung', !!(cue && cue[2]));
   }
   const s = taleAt(cues.scenes, t);
   const name = s < 0 ? cues.scenes[0][1] : cues.scenes[s][1];
   if (name !== taleSceneName) {
     taleSceneName = name;
     sceneBox.innerHTML = (SCENES[name] || SCENES.cabin)();
+    // Restart the fade: drop the class, force a reflow, add it back.
+    sceneBox.classList.remove('fade');
+    void sceneBox.getBoundingClientRect().width;
+    sceneBox.classList.add('fade');
   }
 }
 function taleFmt(s) {

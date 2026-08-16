@@ -61,7 +61,7 @@ scene**, both driven by `audio/original/kz_story.json` (also local-only):
 translation made for this app, working from YouTube's Persian auto-captions for the
 timings — it is not Shamlou's text and makes no claim to be. The thirteen scene
 illustrations are drawn in `index.html` from a shared set of pieces (`sCabin`, `sFox`,
-`sRooster`, `sCat`, `sTorqe`, `sTree`…), all on a `0 0 400 240` viewBox; they are
+`sRooster`, `sCat`, `sLark`, `sTree`…), all on a `0 0 400 240` viewBox; they are
 original drawings, not the book's — Farshid Mesghali's illustrations are copyrighted,
 and the recording's video track is only a still of the cover in any case.
 
