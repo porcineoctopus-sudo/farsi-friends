@@ -97,8 +97,11 @@ repo — it lives in the home directory and points at this checkout by absolute 
 ~/Library/LaunchAgents/com.farsi-friends.server.plist
 ```
 
-It runs the same `http.server` on port 8777 bound to `0.0.0.0`, starts at login, and
-restarts if the process dies. Useful commands:
+It runs the same `http.server` on port 8777 bound to **`127.0.0.1`**, starts at login,
+and restarts if the process dies. Localhost-only is deliberate: nothing on the wifi can
+reach `audio/original/`. The trade is that **the iPad cannot reach it either** — story
+time works on this Mac alone. To put it back on the network, change `--bind` to
+`0.0.0.0` in the plist and kickstart. Useful commands:
 
 ```sh
 launchctl print gui/$UID/com.farsi-friends.server     # status and pid
@@ -107,10 +110,7 @@ launchctl bootout gui/$UID/com.farsi-friends.server        # stop and disable
 launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.farsi-friends.server.plist
 ```
 
-Requests are logged to `.server.log` (gitignored). Because it binds `0.0.0.0`, anyone
-on the same wifi can reach the folder — including `audio/original/`. That is the point
-(it is how the iPad gets the recording), but if you'd rather it were reachable only
-from this Mac, change `--bind 0.0.0.0` to `127.0.0.1` in the plist and kickstart it.
+Requests are logged to `.server.log` (gitignored).
 
 ## Regenerating the audio
 
