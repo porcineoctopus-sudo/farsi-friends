@@ -190,6 +190,12 @@
   .part-btn { padding:8px 18px; border:2px solid #6b4ea8; border-radius:999px; background:#fff;
               color:#6b4ea8; font-size:16px; font-weight:600; cursor:pointer; }
   .part-btn.sel { background:#6b4ea8; color:#fff; }
+  #listen-speed { display:flex; align-items:center; justify-content:center; gap:8px;
+                  margin-top:14px; flex-wrap:wrap; }
+  .speed-lbl { font-size:14px; opacity:.65; }
+  .speed-btn { padding:5px 13px; border:2px solid #6b4ea8; border-radius:999px; background:#fff;
+               color:#6b4ea8; font-size:14px; font-weight:600; cursor:pointer; }
+  .speed-btn.sel { background:#6b4ea8; color:#fff; }
   #listen-bar { width:min(78vw,420px); height:12px; border-radius:999px; background:rgba(0,0,0,.13);
                 margin:16px 0 6px; overflow:hidden; cursor:pointer; }
   #listen-fill { height:100%; width:0; border-radius:999px; background:#6b4ea8; transition:width .25s linear; }
@@ -306,6 +312,12 @@
   <button class="big-btn btn-green" id="listen-play" style="min-width:170px" onclick="taleToggle()">▶︎ Play</button>
   <div id="listen-bar"><div id="listen-fill"></div></div>
   <div id="listen-time">0:00 / 0:00</div>
+  <div id="listen-speed">
+    <span class="speed-lbl">Speed</span>
+    <button class="speed-btn" data-rate="0.75" onclick="taleSetRate(0.75)">0.75&times;</button>
+    <button class="speed-btn sel" data-rate="1" onclick="taleSetRate(1)">1&times;</button>
+    <button class="speed-btn" data-rate="1.25" onclick="taleSetRate(1.25)">1.25&times;</button>
+  </div>
 </section>
 
 <!-- ================= FEED KOOCHOOLOO ================= -->
@@ -1220,6 +1232,7 @@ const SCENES = {
    rewound to 0 on every screen change, which would lose our place in a 28-minute
    recording; this one is only ever paused, so stepping away and coming back resumes. */
 let taleAudio = null, talePart = 0, taleStory = null, taleKey = null;
+let taleRate = 1;            // remembered across parts and screen changes
 let taleData = null, taleSubIdx = -1, taleSceneName = null;
 const taleAvailable = {};   // story key -> is the local recording actually here?
 
@@ -1275,9 +1288,25 @@ function taleLoad(i, autoplay) {
   taleAudio.pause();
   taleAudio.src = part.src;
   taleAudio.currentTime = 0;
+  taleApplyRate();               // changing .src resets playbackRate, so set it again
   taleProgress();
   if (autoplay) taleAudio.play().catch(() => {});
   setTaleButton();
+}
+/* Playback speed. Slowing a recitation down is the point, so keep the pitch put —
+   otherwise Shamlou drops an octave and the music goes with him. Safari wants the
+   prefixed name; setting both is harmless where only one exists. */
+function taleApplyRate() {
+  if (!taleAudio) return;
+  taleAudio.preservesPitch = true;
+  taleAudio.webkitPreservesPitch = true;
+  taleAudio.playbackRate = taleRate;
+}
+function taleSetRate(r) {
+  taleRate = r;
+  taleApplyRate();
+  document.querySelectorAll('#listen-speed .speed-btn')
+          .forEach(b => b.classList.toggle('sel', Number(b.dataset.rate) === r));
 }
 function talePick(i) { taleLoad(i, !taleAudio || !taleAudio.paused); }
 function taleNextPart() {
