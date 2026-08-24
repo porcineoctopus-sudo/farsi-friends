@@ -524,7 +524,17 @@ function mascotSVG() {
     <ellipse cx="80" cy="172" rx="13" ry="9" fill="#e7a85b"/>
     <ellipse cx="120" cy="172" rx="13" ry="9" fill="#e7a85b"/>
     <ellipse cx="85" cy="150" rx="9" ry="8" fill="#eeb267"/>
-    <ellipse cx="115" cy="150" rx="9" ry="8" fill="#eeb267"/>`;
+    <ellipse cx="115" cy="150" rx="9" ry="8" fill="#eeb267"/>
+    <!-- top hat, worn at a slight angle. Drawn last so the brim sits over the
+         inner edge of each ear, the way a hat actually would. -->
+    <g transform="rotate(-9 100 45)">
+      <path d="M78 45 L72 9 L128 9 L122 45 Z" fill="#2b2030"/>
+      <ellipse cx="100" cy="9" rx="28" ry="5.5" fill="#3d2f47"/>
+      <path d="M76 33 L124 33 L122.5 42 L77.5 42 Z" fill="#6b4ea8"/>
+      <ellipse cx="100" cy="45" rx="38" ry="8" fill="#2b2030"/>
+      <path d="M80 14 L76 40" stroke="#fff" stroke-width="2.5" opacity=".13"
+            stroke-linecap="round"/>
+    </g>`;
 }
 /* ---------- Cat friend (for Stories) ---------- */
 function catSVG() {
