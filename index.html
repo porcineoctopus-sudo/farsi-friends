@@ -460,6 +460,51 @@ const THEMES = [
       { fa:"باغ‌وحش",     tr:"bâgh-e vahsh",  say:"baagh e vahsh", en:"Zoo",           emoji:"🦁", group:"✈️ Going places", audio:"audio/baghevahsh.mp3" },
     ],
   },
+  {
+    // The step up from Greetings: the words you need to actually hold a
+    // conversation rather than open one. Colloquial spoken forms throughout
+    // (mikhâm, nemidoonam, berim) — that's what gets heard at home, and the
+    // app already leans that way with chetori and mersi.
+    id: "talking", name: "Talking", icon: "💬",
+    phrases: [
+      // Asking things — the six words that turn a listener into a talker
+      { fa:"چی؟",         tr:"chi?",          say:"chee",          en:"What?",         emoji:"❓", group:"❓ Asking things", audio:"audio/chi.mp3" },
+      { fa:"کی؟",         tr:"ki?",           say:"kee",           en:"Who?",          emoji:"👤", group:"❓ Asking things", audio:"audio/ki.mp3" },
+      { fa:"کجا؟",        tr:"kojâ?",         say:"ko jaa",        en:"Where?",        emoji:"📍", group:"❓ Asking things", audio:"audio/koja.mp3" },
+      { fa:"کِی؟",         tr:"key?",          say:"kay",           en:"When?",         emoji:"⏰", group:"❓ Asking things", audio:"audio/key.mp3" },
+      { fa:"چرا؟",        tr:"cherâ?",        say:"che raa",       en:"Why?",          emoji:"💭", group:"❓ Asking things", audio:"audio/chera.mp3" },
+      { fa:"چند تا؟",     tr:"chand tâ?",     say:"chand taa",     en:"How many?",     emoji:"🔢", group:"❓ Asking things", audio:"audio/chandta.mp3" },
+      // Meeting someone
+      { fa:"اسم تو چیه؟", tr:"esme to chi-e?", say:"es me to chee yeh", en:"What's your name?", emoji:"🏷️", group:"🙋 Meeting someone", audio:"audio/esm_chie.mp3" },
+      { fa:"اسم من کوچولوست", tr:"esme man Koochooloost", say:"es me man koo choo loost", en:"My name is Koochooloo", emoji:"🐹", group:"🙋 Meeting someone", audio:"audio/esme_man.mp3" },
+      { fa:"چند سالته؟",  tr:"chand sâlete?", say:"chand saa le teh", en:"How old are you?", emoji:"🎂", group:"🙋 Meeting someone", audio:"audio/chand_salete.mp3" },
+      { fa:"اهل کجایی؟",  tr:"ahle kojâyi?",  say:"ah le ko jaa yee", en:"Where are you from?", emoji:"🗺️", group:"🙋 Meeting someone", audio:"audio/ahle_koja.mp3" },
+      // How I feel — built on the same "… hastam" frame as gorosne/teshne hastam
+      { fa:"خوشحال هستم", tr:"khoshhâl hastam", say:"khosh haal has tam", en:"I'm happy", emoji:"😄", group:"😊 How I feel", audio:"audio/khoshhal.mp3" },
+      { fa:"ناراحت هستم", tr:"nârâhat hastam", say:"naa raa hat has tam", en:"I'm sad",  emoji:"😢", group:"😊 How I feel", audio:"audio/narahat.mp3" },
+      { fa:"خسته هستم",   tr:"khaste hastam", say:"khas te has tam", en:"I'm tired",     emoji:"😴", group:"😊 How I feel", audio:"audio/khaste.mp3" },
+      { fa:"می‌ترسم",      tr:"mitarsam",      say:"mee tar sam",   en:"I'm scared",    emoji:"😨", group:"😊 How I feel", audio:"audio/mitarsam.mp3" },
+      { fa:"عصبانی هستم", tr:"asabâni hastam", say:"a sa baa nee has tam", en:"I'm angry", emoji:"😠", group:"😊 How I feel", audio:"audio/asabani.mp3" },
+      // Being polite
+      { fa:"ببخشید",      tr:"bebakhshid",    say:"be bakh sheed", en:"Excuse me",     emoji:"🙇", group:"🤝 Being polite", audio:"audio/bebakhshid.mp3" },
+      { fa:"لطفاً",        tr:"lotfan",        say:"lot fan",       en:"Please",        emoji:"🥺", group:"🤝 Being polite", audio:"audio/lotfan.mp3" },
+      { fa:"خواهش می‌کنم", tr:"khâhesh mikonam", say:"khaa hesh mee ko nam", en:"You're welcome", emoji:"😌", group:"🤝 Being polite", audio:"audio/khahesh.mp3" },
+      { fa:"متأسفم",      tr:"mota'assefam",  say:"mo ta as se fam", en:"I'm sorry",   emoji:"💔", group:"🤝 Being polite", audio:"audio/motasefam.mp3" },
+      // Doing things — the imperatives kids hear all day
+      { fa:"بیا",         tr:"biâ",           say:"bee yaa",       en:"Come!",         emoji:"🤗", group:"🏃 Doing things", audio:"audio/bia.mp3" },
+      { fa:"برو",         tr:"boro",          say:"bo ro",         en:"Go!",           emoji:"🚶", group:"🏃 Doing things", audio:"audio/boro.mp3" },
+      { fa:"بریم",        tr:"berim",         say:"be reem",       en:"Let's go!",     emoji:"🏃", group:"🏃 Doing things", audio:"audio/berim.mp3" },
+      { fa:"صبر کن",      tr:"sabr kon",      say:"sabr kon",      en:"Wait!",         emoji:"✋", group:"🏃 Doing things", audio:"audio/sabr_kon.mp3" },
+      { fa:"کمک",         tr:"komak",         say:"ko mak",        en:"Help!",         emoji:"🆘", group:"🏃 Doing things", audio:"audio/komak.mp3" },
+      { fa:"بازی کنیم",   tr:"bâzi konim",    say:"baa zee ko neem", en:"Let's play!", emoji:"🎲", group:"🏃 Doing things", audio:"audio/bazi_konim.mp3" },
+      // Saying what I think — taught in pairs, so the ne- prefix does the work
+      { fa:"می‌خوام",      tr:"mikhâm",        say:"mee khaam",     en:"I want",        emoji:"🙋", group:"💭 What I think", audio:"audio/mikham.mp3" },
+      { fa:"نمی‌خوام",     tr:"nemikhâm",      say:"ne mee khaam",  en:"I don't want",  emoji:"🙅", group:"💭 What I think", audio:"audio/nemikham.mp3" },
+      { fa:"می‌دونم",      tr:"midoonam",      say:"mee doo nam",   en:"I know",        emoji:"💡", group:"💭 What I think", audio:"audio/midoonam.mp3" },
+      { fa:"نمی‌دونم",     tr:"nemidoonam",    say:"ne mee doo nam", en:"I don't know", emoji:"🤷", group:"💭 What I think", audio:"audio/nemidoonam.mp3" },
+      { fa:"باشه",        tr:"bâshe",         say:"baa sheh",      en:"Okay",          emoji:"👌", group:"💭 What I think", audio:"audio/bashe.mp3" },
+    ],
+  },
 ];
 
 let currentTheme = THEMES[0];

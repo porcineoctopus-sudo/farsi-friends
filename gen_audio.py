@@ -101,6 +101,48 @@ THEMES = {
         ("پارک",         "park.mp3"),
         ("باغِ وحش",     "baghevahsh.mp3"),  # kasra spells out the ezâfe: "bâgh-e vahsh"
     ],
+    # The conversational step-up theme. No ZWNJ anywhere here (it trips the
+    # voice, same as it did in ranginkaman), and the tanvin/hamze are dropped
+    # from lotfan and motasefam for the same reason — the display text in
+    # index.html keeps the correct orthography.
+    "talking": [
+        # Asking things
+        ("چی؟",            "chi.mp3"),
+        ("کی؟",            "ki.mp3"),
+        ("کجا؟",           "koja.mp3"),
+        ("کِی؟",            "key.mp3"),        # kasra pins "key" (when) apart from "ki" (who)
+        ("چرا؟",           "chera.mp3"),
+        ("چند تا؟",        "chandta.mp3"),
+        # Meeting someone
+        ("اسم تو چیه؟",     "esm_chie.mp3"),
+        ("اسم من کوچولوست", "esme_man.mp3"),
+        ("چند سالته؟",      "chand_salete.mp3"),
+        ("اهل کجایی؟",      "ahle_koja.mp3"),
+        # How I feel
+        ("خوشحال هستم",     "khoshhal.mp3"),
+        ("ناراحت هستم",     "narahat.mp3"),
+        ("خسته هستم",       "khaste.mp3"),
+        ("می ترسم",         "mitarsam.mp3"),
+        ("عصبانی هستم",     "asabani.mp3"),
+        # Being polite
+        ("ببخشید",          "bebakhshid.mp3"),
+        ("لطفا",            "lotfan.mp3"),
+        ("خواهش می کنم",    "khahesh.mp3"),
+        ("متاسفم",          "motasefam.mp3"),
+        # Doing things
+        ("بیا",             "bia.mp3"),
+        ("برو",             "boro.mp3"),
+        ("بریم",            "berim.mp3"),
+        ("صبر کن",          "sabr_kon.mp3"),
+        ("کمک",             "komak.mp3"),
+        ("بازی کنیم",       "bazi_konim.mp3"),
+        # Saying what I think
+        ("می خوام",         "mikham.mp3"),
+        ("نمی خوام",        "nemikham.mp3"),
+        ("می دونم",         "midoonam.mp3"),
+        ("نمی دونم",        "nemidoonam.mp3"),
+        ("باشه",            "bashe.mp3"),
+    ],
     "extras": [
         ("آفرین",       "afarin.mp3"),   # mascot celebration
     ],
