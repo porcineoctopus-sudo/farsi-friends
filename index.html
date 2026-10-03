@@ -117,6 +117,7 @@
   }
   .card:active { transform: scale(.95); }
   .card .emoji { font-size: 64px; line-height: 1; }
+  .card .emoji.pair { font-size: 46px; height: 64px; display:flex; align-items:center; justify-content:center; }
   .card .fa { font-size: 30px; font-weight: 800; direction: rtl; margin-top: 6px; }
   .card .tr { font-size: 18px; color: var(--purple); font-weight: 800; }
   .card .en { font-size: 15px; color: #8a7aa5; }
@@ -129,6 +130,21 @@
     width: 150px; height: 150px; border-radius: 28px; background: var(--card);
     font-size: 80px; box-shadow: 0 6px 0 rgba(0,0,0,.12);
   }
+  .choice.pair { font-size: 56px; }
+  .choice.has-pic { padding: 8px; }
+  .choice .pic { width: 100%; height: 100%; border-radius: 20px; display: block; }
+  .card .pic { width: 140px; height: 140px; border-radius: 20px; display: block; margin: 0 auto; }
+  .pic .a-wave { transform-box: fill-box; transform-origin: 30% 100%; animation: pic-wave 1.2s ease-in-out infinite; }
+  @keyframes pic-wave { 0%,100% { transform: rotate(-12deg); } 50% { transform: rotate(14deg); } }
+  .pic .a-nod   { transform-box: fill-box; animation: pic-nod 1s ease-in-out infinite; }
+  .pic .a-wag   { transform-box: fill-box; transform-origin: 0% 100%; animation: pic-wag .7s ease-in-out infinite; }
+  @keyframes pic-wag { 0%,100% { transform: rotate(-10deg); } 50% { transform: rotate(12deg); } }
+  .pic .a-shake { transform-box: fill-box; transform-origin: 50% 100%; animation: pic-shake .9s ease-in-out infinite; }
+  .pic .a-rise  { transform-box: fill-box; animation: pic-rise 2.4s ease-in-out infinite; }
+  .pic .a-rise.d1 { animation-delay: .8s; } .pic .a-rise.d2 { animation-delay: 1.6s; }
+  @keyframes pic-nod   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+  @keyframes pic-shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+  @keyframes pic-rise  { 0% { transform: translateY(8px); opacity: 0; } 30%,70% { opacity: 1; } 100% { transform: translateY(-10px); opacity: 0; } }
   .choice.wrong { animation: shake .4s; }
   .choice.right { animation: pop .4s; background: #d6ffd9; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
@@ -350,19 +366,19 @@ const THEMES = [
     id: "greetings", name: "Greetings", icon: "👋",
     phrases: [
       // Hello & Goodbye
-      { fa:"سلام",        tr:"salâm",         say:"salaam",        en:"Hello",         emoji:"👋", group:"👋 Hello & Goodbye", audio:"audio/salam.mp3" },
-      { fa:"درود",        tr:"dorood",        say:"doh rood",      en:"Hi / Greetings", emoji:"🌸", group:"👋 Hello & Goodbye", audio:"audio/dorood.mp3" },
-      { fa:"خداحافظ",     tr:"khodâhâfez",    say:"khoda hafez",   en:"Goodbye",       emoji:"🙋", group:"👋 Hello & Goodbye", audio:"audio/khodahafez.mp3" },
-      { fa:"شب بخیر",     tr:"shab bekheyr",  say:"shab be kheyr", en:"Good night",    emoji:"🌙", group:"👋 Hello & Goodbye", audio:"audio/shab_bekheyr.mp3" },
+      { fa:"سلام",        tr:"salâm",         say:"salaam",        en:"Hello",         emoji:"👋", group:"👋 Hello & Goodbye", audio:"audio/salam.mp3", pic:"hello" },
+      { fa:"درود",        tr:"dorood",        say:"doh rood",      en:"Hi / Greetings", emoji:"🤝", group:"👋 Hello & Goodbye", audio:"audio/dorood.mp3", pic:"hi" },
+      { fa:"خداحافظ",     tr:"khodâhâfez",    say:"khoda hafez",   en:"Goodbye",       emoji:"👋🚪", group:"👋 Hello & Goodbye", audio:"audio/khodahafez.mp3", pic:"bye" },
+      { fa:"شب بخیر",     tr:"shab bekheyr",  say:"shab be kheyr", en:"Good night",    emoji:"🛌", group:"👋 Hello & Goodbye", audio:"audio/shab_bekheyr.mp3", pic:"goodnight" },
       // How are you?
-      { fa:"چطوری؟",      tr:"chetori?",      say:"che tori",      en:"How are you?",  emoji:"🤔", group:"🤔 How are you?", audio:"audio/chetori.mp3" },
-      { fa:"خوبی؟",       tr:"khoobi?",       say:"khoo bee",      en:"Are you well?", emoji:"🙂", group:"🤔 How are you?", audio:"audio/khoobi.mp3" },
-      { fa:"خوبم",        tr:"khoobam",       say:"khoo bam",      en:"I'm good",      emoji:"👍", group:"🤔 How are you?", audio:"audio/khoobam.mp3" },
+      { fa:"چطوری؟",      tr:"chetori?",      say:"che tori",      en:"How are you?",  emoji:"😊❓", group:"🤔 How are you?", audio:"audio/chetori.mp3", pic:"howAreYou" },
+      { fa:"خوبی؟",       tr:"khoobi?",       say:"khoo bee",      en:"Are you well?", emoji:"👍❓", group:"🤔 How are you?", audio:"audio/khoobi.mp3", pic:"areYouWell" },
+      { fa:"خوبم",        tr:"khoobam",       say:"khoo bam",      en:"I'm good",      emoji:"👍", group:"🤔 How are you?", audio:"audio/khoobam.mp3", pic:"imGood" },
       // Everyday words
-      { fa:"مرسی",        tr:"mersi",         say:"merci",         en:"Thank you",     emoji:"🙏", group:"💬 Everyday words", audio:"audio/mersi.mp3" },
-      { fa:"بله",         tr:"bale",          say:"baleh",         en:"Yes",           emoji:"✅", group:"💬 Everyday words", audio:"audio/bale.mp3" },
-      { fa:"نه",          tr:"na",            say:"na",            en:"No",            emoji:"🚫", group:"💬 Everyday words", audio:"audio/na.mp3" },
-      { fa:"دوستت دارم",  tr:"doostet dâram", say:"dooset daaram", en:"I love you",    emoji:"❤️", group:"💬 Everyday words", audio:"audio/dooset_daram.mp3" },
+      { fa:"مرسی",        tr:"mersi",         say:"merci",         en:"Thank you",     emoji:"🙏", group:"💬 Everyday words", audio:"audio/mersi.mp3", pic:"thanks" },
+      { fa:"بله",         tr:"bale",          say:"baleh",         en:"Yes",           emoji:"✅", group:"💬 Everyday words", audio:"audio/bale.mp3", pic:"yes" },
+      { fa:"نه",          tr:"na",            say:"na",            en:"No",            emoji:"❌", group:"💬 Everyday words", audio:"audio/na.mp3", pic:"no" },
+      { fa:"دوستت دارم",  tr:"doostet dâram", say:"dooset daaram", en:"I love you",    emoji:"❤️", group:"💬 Everyday words", audio:"audio/dooset_daram.mp3", pic:"love" },
     ],
   },
   {
@@ -444,19 +460,19 @@ const THEMES = [
       { fa:"دانشگاه",     tr:"dâneshgâh",     say:"daa nesh gaah", en:"University",    emoji:"🎓", group:"🏫 Around town", audio:"audio/daneshgah.mp3" },
       { fa:"بیمارستان",   tr:"bimârestân",    say:"bee maa res taan", en:"Hospital",   emoji:"🏥", group:"🏫 Around town", audio:"audio/bimarestan.mp3" },
       { fa:"کتابخانه",    tr:"ketâbkhâne",    say:"ke taab khaa ne", en:"Library",     emoji:"📚", group:"🏫 Around town", audio:"audio/ketabkhane.mp3" },
-      { fa:"موزه",        tr:"muze",          say:"moo ze",        en:"Museum",        emoji:"🖼️", group:"🏫 Around town", audio:"audio/muze.mp3" },
+      { fa:"موزه",        tr:"muze",          say:"moo ze",        en:"Museum",        emoji:"🏛️", group:"🏫 Around town", audio:"audio/muze.mp3" },
       { fa:"مسجد",        tr:"masjed",        say:"mas jed",       en:"Mosque",        emoji:"🕌", group:"🏫 Around town", audio:"audio/masjed.mp3" },
       { fa:"بانک",        tr:"bânk",          say:"baank",         en:"Bank",          emoji:"🏦", group:"🏫 Around town", audio:"audio/bank.mp3" },
       // Shops & food
       { fa:"مغازه",       tr:"maghâze",       say:"magh aa ze",    en:"Shop",          emoji:"🏪", group:"🏪 Shops & food", audio:"audio/maghaze.mp3" },
       { fa:"نانوایی",     tr:"nânvâyi",       say:"naan vaa yee",  en:"Bakery",        emoji:"🥐", group:"🏪 Shops & food", audio:"audio/nanvayi.mp3" },
-      { fa:"رستوران",     tr:"restorân",      say:"res to raan",   en:"Restaurant",    emoji:"🍽️", group:"🏪 Shops & food", audio:"audio/restoran.mp3" },
+      { fa:"رستوران",     tr:"restorân",      say:"res to raan",   en:"Restaurant",    emoji:"🧑‍🍳", group:"🏪 Shops & food", audio:"audio/restoran.mp3" },
       // Going places
       { fa:"فرودگاه",     tr:"forudgâh",      say:"fo rood gaah",  en:"Airport",       emoji:"✈️", group:"✈️ Going places", audio:"audio/forudgah.mp3" },
       { fa:"ایستگاه",     tr:"istgâh",        say:"eest gaah",     en:"Station",       emoji:"🚉", group:"✈️ Going places", audio:"audio/istgah.mp3" },
       { fa:"سینما",       tr:"sinemâ",        say:"see ne maa",    en:"Cinema",        emoji:"🎬", group:"✈️ Going places", audio:"audio/sinema.mp3" },
       { fa:"ورزشگاه",     tr:"varzeshgâh",    say:"var zesh gaah", en:"Stadium",       emoji:"🏟️", group:"✈️ Going places", audio:"audio/varzeshgah.mp3" },
-      { fa:"پارک",        tr:"pârk",          say:"paark",         en:"Park",          emoji:"🏞️", group:"✈️ Going places", audio:"audio/park.mp3" },
+      { fa:"پارک",        tr:"pârk",          say:"paark",         en:"Park",          emoji:"🛝", group:"✈️ Going places", audio:"audio/park.mp3" },
       { fa:"باغ‌وحش",     tr:"bâgh-e vahsh",  say:"baagh e vahsh", en:"Zoo",           emoji:"🦁", group:"✈️ Going places", audio:"audio/baghevahsh.mp3" },
     ],
   },
@@ -468,17 +484,17 @@ const THEMES = [
     id: "talking", name: "Talking", icon: "💬",
     phrases: [
       // Asking things — the six words that turn a listener into a talker
-      { fa:"چی؟",         tr:"chi?",          say:"chee",          en:"What?",         emoji:"❓", group:"❓ Asking things", audio:"audio/chi.mp3" },
-      { fa:"کی؟",         tr:"ki?",           say:"kee",           en:"Who?",          emoji:"👤", group:"❓ Asking things", audio:"audio/ki.mp3" },
-      { fa:"کجا؟",        tr:"kojâ?",         say:"ko jaa",        en:"Where?",        emoji:"📍", group:"❓ Asking things", audio:"audio/koja.mp3" },
-      { fa:"کِی؟",         tr:"key?",          say:"kay",           en:"When?",         emoji:"⏰", group:"❓ Asking things", audio:"audio/key.mp3" },
-      { fa:"چرا؟",        tr:"cherâ?",        say:"che raa",       en:"Why?",          emoji:"💭", group:"❓ Asking things", audio:"audio/chera.mp3" },
-      { fa:"چند تا؟",     tr:"chand tâ?",     say:"chand taa",     en:"How many?",     emoji:"🔢", group:"❓ Asking things", audio:"audio/chandta.mp3" },
+      { fa:"چی؟",         tr:"chi?",          say:"chee",          en:"What?",         emoji:"🎁❓", group:"❓ Asking things", audio:"audio/chi.mp3" },
+      { fa:"کی؟",         tr:"ki?",           say:"kee",           en:"Who?",          emoji:"🧑❓", group:"❓ Asking things", audio:"audio/ki.mp3", pic:"who" },
+      { fa:"کجا؟",        tr:"kojâ?",         say:"ko jaa",        en:"Where?",        emoji:"📍❓", group:"❓ Asking things", audio:"audio/koja.mp3" },
+      { fa:"کِی؟",         tr:"key?",          say:"kay",           en:"When?",         emoji:"⏰❓", group:"❓ Asking things", audio:"audio/key.mp3" },
+      { fa:"چرا؟",        tr:"cherâ?",        say:"che raa",       en:"Why?",          emoji:"🤔❓", group:"❓ Asking things", audio:"audio/chera.mp3" },
+      { fa:"چند تا؟",     tr:"chand tâ?",     say:"chand taa",     en:"How many?",     emoji:"🔢❓", group:"❓ Asking things", audio:"audio/chandta.mp3" },
       // Meeting someone
       { fa:"اسم تو چیه؟", tr:"esme to chi-e?", say:"es me to chee yeh", en:"What's your name?", emoji:"🏷️", group:"🙋 Meeting someone", audio:"audio/esm_chie.mp3" },
       { fa:"اسم من کوچولوست", tr:"esme man Koochooloost", say:"es me man koo choo loost", en:"My name is Koochooloo", emoji:"🐹", group:"🙋 Meeting someone", audio:"audio/esme_man.mp3" },
-      { fa:"چند سالته؟",  tr:"chand sâlete?", say:"chand saa le teh", en:"How old are you?", emoji:"🎂", group:"🙋 Meeting someone", audio:"audio/chand_salete.mp3" },
-      { fa:"اهل کجایی؟",  tr:"ahle kojâyi?",  say:"ah le ko jaa yee", en:"Where are you from?", emoji:"🗺️", group:"🙋 Meeting someone", audio:"audio/ahle_koja.mp3" },
+      { fa:"چند سالته؟",  tr:"chand sâlete?", say:"chand saa le teh", en:"How old are you?", emoji:"🎂❓", group:"🙋 Meeting someone", audio:"audio/chand_salete.mp3" },
+      { fa:"اهل کجایی؟",  tr:"ahle kojâyi?",  say:"ah le ko jaa yee", en:"Where are you from?", emoji:"🌍❓", group:"🙋 Meeting someone", audio:"audio/ahle_koja.mp3" },
       // How I feel — built on the same "… hastam" frame as gorosne/teshne hastam
       { fa:"خوشحال هستم", tr:"khoshhâl hastam", say:"khosh haal has tam", en:"I'm happy", emoji:"😄", group:"😊 How I feel", audio:"audio/khoshhal.mp3" },
       { fa:"ناراحت هستم", tr:"nârâhat hastam", say:"naa raa hat has tam", en:"I'm sad",  emoji:"😢", group:"😊 How I feel", audio:"audio/narahat.mp3" },
@@ -488,12 +504,12 @@ const THEMES = [
       // Being polite
       { fa:"ببخشید",      tr:"bebakhshid",    say:"be bakh sheed", en:"Excuse me",     emoji:"🙇", group:"🤝 Being polite", audio:"audio/bebakhshid.mp3" },
       { fa:"لطفاً",        tr:"lotfan",        say:"lot fan",       en:"Please",        emoji:"🥺", group:"🤝 Being polite", audio:"audio/lotfan.mp3" },
-      { fa:"خواهش می‌کنم", tr:"khâhesh mikonam", say:"khaa hesh mee ko nam", en:"You're welcome", emoji:"😌", group:"🤝 Being polite", audio:"audio/khahesh.mp3" },
-      { fa:"متأسفم",      tr:"mota'assefam",  say:"mo ta as se fam", en:"I'm sorry",   emoji:"💔", group:"🤝 Being polite", audio:"audio/motasefam.mp3" },
+      { fa:"خواهش می‌کنم", tr:"khâhesh mikonam", say:"khaa hesh mee ko nam", en:"You're welcome", emoji:"🫴", group:"🤝 Being polite", audio:"audio/khahesh.mp3" },
+      { fa:"متأسفم",      tr:"mota'assefam",  say:"mo ta as se fam", en:"I'm sorry",   emoji:"😔", group:"🤝 Being polite", audio:"audio/motasefam.mp3" },
       // Doing things — the imperatives kids hear all day
       { fa:"بیا",         tr:"biâ",           say:"bee yaa",       en:"Come!",         emoji:"🤗", group:"🏃 Doing things", audio:"audio/bia.mp3" },
       { fa:"برو",         tr:"boro",          say:"bo ro",         en:"Go!",           emoji:"🚶", group:"🏃 Doing things", audio:"audio/boro.mp3" },
-      { fa:"بریم",        tr:"berim",         say:"be reem",       en:"Let's go!",     emoji:"🏃", group:"🏃 Doing things", audio:"audio/berim.mp3" },
+      { fa:"بریم",        tr:"berim",         say:"be reem",       en:"Let's go!",     emoji:"🏃🏃", group:"🏃 Doing things", audio:"audio/berim.mp3" },
       { fa:"صبر کن",      tr:"sabr kon",      say:"sabr kon",      en:"Wait!",         emoji:"✋", group:"🏃 Doing things", audio:"audio/sabr_kon.mp3" },
       { fa:"کمک",         tr:"komak",         say:"ko mak",        en:"Help!",         emoji:"🆘", group:"🏃 Doing things", audio:"audio/komak.mp3" },
       { fa:"بازی کنیم",   tr:"bâzi konim",    say:"baa zee ko neem", en:"Let's play!", emoji:"🎲", group:"🏃 Doing things", audio:"audio/bazi_konim.mp3" },
@@ -508,6 +524,15 @@ const THEMES = [
 ];
 
 let currentTheme = THEMES[0];
+
+// Some pictures are two emoji (🎁❓ for "what?", 🌲🌲 for forest) and need a
+// smaller size to fit. Count what the eye sees as one emoji, not code points —
+// ❤️ and 🏛️ carry an invisible variation selector.
+const emojiSeg = window.Intl && Intl.Segmenter ? new Intl.Segmenter() : null;
+function isPair(e) {
+  return emojiSeg ? [...emojiSeg.segment(e)].length > 1
+                  : [...e.replace(/\u200d.|\ufe0f/gu, '')].length > 1;
+}
 
 /* ---------- Mascot: Koochooloo the hamster (more realistic, reused) ----------
    She is drawn into four different <svg>s (home, play, story, feed), so the
@@ -804,7 +829,7 @@ function buildLearnGrid() {
     }
     const card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = `<div class="emoji">${p.emoji}</div>
+    card.innerHTML = `${p.pic ? picSVG(p) : `<div class="emoji${isPair(p.emoji) ? ' pair' : ''}">${p.emoji}</div>`}
                       <div class="fa">${p.fa}</div>
                       <div class="tr">${p.tr}</div>
                       <div class="en">${p.en}</div>`;
@@ -835,8 +860,8 @@ function nextRound() {
   box.style.pointerEvents = '';
   options.forEach(p => {
     const b = document.createElement('button');
-    b.className = 'choice';
-    b.textContent = p.emoji;
+    b.className = p.pic ? 'choice has-pic' : isPair(p.emoji) ? 'choice pair' : 'choice';
+    if (p.pic) b.innerHTML = picSVG(p); else b.textContent = p.emoji;
     b.onclick = () => choose(b, p);
     box.appendChild(b);
   });
@@ -1182,6 +1207,247 @@ const NOTES = (x, y, color) =>
 /* An emoji accent that throbs (or whatever `cls` says) */
 const EMO = (x, y, size, ch, cls) =>
   `<text x="${x}" y="${y}" font-size="${size}" class="${cls || 'a-pulse'}">${ch}</text>`;
+
+/* ---------- Phrase pictures ----------
+   Greetings and questions aren't things, they're things you say in a moment,
+   and no single emoji pins that moment down (🌙 is the moon, 🛏️ is a bed).
+   So these phrases get a little drawing of Koochooloo acting the moment out,
+   on a 0 0 200 200 viewBox; a phrase with `pic` shows it in place of its emoji.
+   Flat colours, no gradients — the same drawing appears in many <svg>s at once
+   and gradient ids would collide. */
+
+/* Koochooloo, standing at (x, y) — her feet — about 180·s tall.
+   o.wave: raise a paw and wave it. o.finger: hold a paw up, one finger
+   raised, and wag it — no, no, no. o.thumb: a thumbs-up, bobbing. o.paws: 'together' holds both front paws
+   at her chest (thanks, a polite greeting). o.eyes: 'open' | 'shut' | 'happy';
+   o.look shifts the pupils sideways (+ is toward the viewer's right, before
+   any flip). o.tilt leans her, in degrees, about her feet.
+   o.hat: 'top' (her usual) | 'night' (a floppy nightcap) | 'none'.
+   o.flip mirrors her, so the waving paw is on the other side. o.cls animates
+   the whole of her (a-nod, a-shake). */
+/* An open hand at (cx, cy): a palm of radius r, three fingers fanned out
+   toward dir (degrees; -90 is up), and a thumb off to one side — side +1 puts
+   it clockwise of the fingers, -1 anticlockwise; point it at the body. Each
+   finger is outlined, so where they overlap they still read as separate. */
+function sHand(cx, cy, r, dir, side, fill, line) {
+  const digit = (a, len) => {
+    const t = (dir + a) * Math.PI / 180, c = Math.cos(t), n = Math.sin(t);
+    const d = `M${(cx + c * r * .3).toFixed(1)} ${(cy + n * r * .3).toFixed(1)} L${(cx + c * r * len).toFixed(1)} ${(cy + n * r * len).toFixed(1)}`;
+    return `<path d="${d}" stroke="${line}" stroke-width="${(r * .62 + 5).toFixed(1)}" stroke-linecap="round"/>
+      <path d="${d}" stroke="${fill}" stroke-width="${(r * .62).toFixed(1)}" stroke-linecap="round"/>`;
+  };
+  return digit(side * 80, 1.3) + digit(-28, 1.55) + digit(0, 1.7) + digit(28, 1.55) +
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${line}" stroke-width="2.5"/>`;
+}
+
+function sKoo(x, y, s, o = {}) {
+  const eyes = o.eyes === 'shut'
+    ? `<path d="M68 104 q11 9 22 0 M110 104 q11 9 22 0" stroke="#2b2030" stroke-width="4" fill="none" stroke-linecap="round"/>`
+    : o.eyes === 'happy'
+    ? `<path d="M68 108 q11 -14 22 0 M110 108 q11 -14 22 0" stroke="#2b2030" stroke-width="5" fill="none" stroke-linecap="round"/>`
+    : `<g transform="translate(${o.look || 0},0)">
+       <ellipse cx="79" cy="104" rx="11" ry="12.5" fill="#2b2030"/>
+       <ellipse cx="121" cy="104" rx="11" ry="12.5" fill="#2b2030"/>
+       <circle cx="83" cy="99" r="3.6" fill="#fff"/><circle cx="125" cy="99" r="3.6" fill="#fff"/></g>`;
+  const hat = o.hat === 'none' ? '' : o.hat === 'night'
+    ? `<path d="M142 50 Q134 6 84 4 Q40 4 22 64 Q44 36 58 50 Z" fill="#7d6bd0"/>
+       <rect x="52" y="42" width="96" height="16" rx="8" fill="#fff"/>
+       <circle cx="22" cy="68" r="11" fill="#fff"/>`
+    : `<g transform="rotate(-9 100 45)">
+         <path d="M78 45 L72 9 L128 9 L122 45 Z" fill="#2b2030"/>
+         <ellipse cx="100" cy="9" rx="28" ry="5.5" fill="#3d2f47"/>
+         <path d="M76 33 L124 33 L122.5 42 L77.5 42 Z" fill="#6b4ea8"/>
+         <ellipse cx="100" cy="45" rx="38" ry="8" fill="#2b2030"/>
+       </g>`;
+  // Arms are outlined in a darker gold: drawn in her own colour over her
+  // round body, they'd vanish. Each runs from a shoulder (40,116 / 160,116).
+  const arm = (d, hand) =>
+    `<path d="${d}" stroke="#c98a45" stroke-width="17" fill="none" stroke-linecap="round"/>
+     <path d="${d}" stroke="#eab063" stroke-width="12" fill="none" stroke-linecap="round"/>${hand || ''}`;
+  const hand = (cx, cy, r, dir, side) => sHand(cx, cy, r, dir, side, '#eeb267', '#c98a45');
+  const together = o.paws === 'together';
+  // Resting paws are held up at her chest, fingers pointing up, hamster-style.
+  const left = together ? arm('M40 116 Q46 150 88 150', hand(91, 148, 9, -72, 1))
+                        : arm('M40 116 Q46 150 80 152', hand(82, 150, 9, -80, 1));
+  // The right arm either rests like the left, waves by her ear, or wags a finger.
+  const right = o.wave
+    ? `<g class="a-wave">${arm('M160 116 L176 86', hand(179, 80, 13, -68, -1))}</g>
+       <path d="M200 52 q12 10 10 26 M210 40 q20 14 15 42" stroke="#6b4ea8" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>`
+    : o.finger
+    // A pointing paw: the index finger up; the other three curled over,
+    // stacked across the front of the fist and sticking out past it, so they
+    // read as fingers; and the thumb tucked under them.
+    ? `<g class="a-wag">${arm('M160 116 L178 104')}
+         <path d="M175 80 L176 54" stroke="#c98a45" stroke-width="15" stroke-linecap="round"/>
+         <path d="M175 80 L176 54" stroke="#eeb267" stroke-width="10" stroke-linecap="round"/>
+         <rect x="166" y="76" width="30" height="38" rx="12" fill="#eeb267" stroke="#c98a45" stroke-width="2.5"/>
+         <rect x="181" y="75" width="27" height="12" rx="6" fill="#f3c07e" stroke="#c98a45" stroke-width="2.5"/>
+         <rect x="181" y="86" width="27" height="12" rx="6" fill="#f3c07e" stroke="#c98a45" stroke-width="2.5"/>
+         <rect x="181" y="97" width="24" height="12" rx="6" fill="#f3c07e" stroke="#c98a45" stroke-width="2.5"/>
+         <ellipse cx="179" cy="108" rx="12" ry="6" transform="rotate(-12 179 108)" fill="#eeb267" stroke="#c98a45" stroke-width="2.5"/></g>`
+    : o.thumb
+    // A fist on end, curled fingers stacked toward the viewer's right, thumb
+    // straight up off the top — not a finger, or it reads as the "no" wag.
+    ? `<g class="a-nod">${arm('M160 116 L178 104')}
+         <path d="M178 88 L178 60" stroke="#c98a45" stroke-width="15" stroke-linecap="round"/>
+         <path d="M178 88 L178 60" stroke="#eeb267" stroke-width="10" stroke-linecap="round"/>
+         <rect x="170" y="82" width="30" height="32" rx="11" fill="#eeb267" stroke="#c98a45" stroke-width="2.5"/>
+         <path d="M184 92 h14 M184 100 h14 M184 108 h12" stroke="#c98a45" stroke-width="2.4" stroke-linecap="round"/></g>`
+    : together ? arm('M160 116 Q154 150 112 150', hand(109, 148, 9, -108, -1))
+               : arm('M160 116 Q154 150 120 152', hand(118, 150, 9, -100, -1));
+  return G(x, y, s, o.flip, `<g transform="rotate(${o.tilt || 0}) translate(-100,-186)">
+    <circle cx="58" cy="54" r="21" fill="#d99a4f"/><circle cx="142" cy="54" r="21" fill="#d99a4f"/>
+    <circle cx="58" cy="56" r="12" fill="#f3b3ac"/><circle cx="142" cy="56" r="12" fill="#f3b3ac"/>
+    <ellipse cx="54" cy="126" rx="28" ry="26" fill="#eab063"/><ellipse cx="146" cy="126" rx="28" ry="26" fill="#eab063"/>
+    <ellipse cx="100" cy="112" rx="74" ry="72" fill="#eab063"/>
+    <ellipse cx="100" cy="126" rx="48" ry="46" fill="#fbecd6"/>
+    <ellipse cx="56" cy="140" rx="11" ry="7" fill="#ff9bb0" opacity=".5"/>
+    <ellipse cx="144" cy="140" rx="11" ry="7" fill="#ff9bb0" opacity=".5"/>
+    ${eyes}
+    <ellipse cx="100" cy="122" rx="7.5" ry="5.5" fill="#9c4a63"/>
+    <path d="M100 134 q-10 9 -19 2 M100 134 q10 9 19 2" stroke="#7a4a33" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <rect x="95.5" y="134" width="9" height="10" rx="2.5" fill="#fff"/>
+    <ellipse cx="80" cy="172" rx="13" ry="9" fill="#e7a85b"/><ellipse cx="120" cy="172" rx="13" ry="9" fill="#e7a85b"/>
+    ${hat}${left}${right}</g>`, o.cls);
+}
+
+/* The Cat (the Stories one), feet at (x, y), about 150·s tall. o.wave raises
+   a paw on the viewer's right. o.hold reaches the other paw out to the
+   viewer's left, where Koochooloo stands; the scene draws what's in it, last,
+   so nothing covers it. */
+function pCat(x, y, s, o = {}) {
+  // Outlined for the same reason as Koochooloo's; shoulders at (48,120) / (152,120).
+  const arm = (d, cx, cy, r, dir, side) =>
+    `<path d="${d}" stroke="#8893a0" stroke-width="17" fill="none" stroke-linecap="round"/>
+     <path d="${d}" stroke="#aab4c0" stroke-width="12" fill="none" stroke-linecap="round"/>
+     ${sHand(cx, cy, r, dir, side, '#c3ccd6', '#8893a0')}`;
+  const left = o.hold ? arm('M48 124 L14 110', 10, 108, 13, -160, 1)
+                      : arm('M48 120 Q54 154 84 158', 86, 154, 10, -75, 1);
+  const right = o.wave ? `<g class="a-wave">${arm('M152 120 L176 84', 178, 80, 13, -65, -1)}</g>`
+                       : arm('M152 120 Q146 154 116 158', 114, 154, 10, -105, -1);
+  return `<g transform="translate(${x - 100 * s},${y - 182 * s}) scale(${s})">${catSVG()}${left}${right}</g>`;
+}
+/* An emoji or a glyph, centred on (x, y) */
+const T = (x, y, size, ch, extra) =>
+  `<text x="${x}" y="${y}" font-size="${size}" text-anchor="middle" dominant-baseline="central" ${extra || ''}>${ch}</text>`;
+/* A speech bubble with its tail pointing down-left or down-right at (tx, ty) */
+function sBubble(x, y, w, h, tx, ty, inner) {
+  const bx = Math.max(x + 14, Math.min(x + w - 14, tx));
+  return `<path d="M${bx - 9} ${y + h - 2} L${tx} ${ty} L${bx + 9} ${y + h - 2} Z" fill="#fff"/>
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h / 2.4}" fill="#fff"/>${inner}`;
+}
+// Position goes on a wrapper <g>: a CSS animation's transform would replace
+// a transform attribute on the animated element itself.
+const sHeart = (x, y, s, c, cls) =>
+  `<g transform="translate(${x},${y}) scale(${s})"><path class="${cls || ''}"
+     d="M0 6 C-12 -4 -8 -14 0 -8 C8 -14 12 -4 0 6 Z" fill="${c || '#ff5d8f'}"/></g>`;
+const sFloor = (wall, floor) =>
+  `<rect width="200" height="200" fill="${wall}"/><rect y="170" width="200" height="30" fill="${floor}"/>`;
+
+/* The drawings are cropped tight on the characters: on a 120px Learn card a
+   window or a sky full of sun is just noise, so each scene keeps one prop —
+   the one that makes the moment — and lets the characters fill the frame. */
+const PICS = {
+  /* salâm — Koochooloo and the Cat meet and both wave */
+  hello: () => sFloor('#bfe6fb', '#9fd37e') +
+    sKoo(72, 194, .56, { wave:true, flip:true, look:-5 }) +
+    pCat(146, 194, .5, { wave:true }),
+
+  /* dorood — the formal hello: paws on her chest and a little bow, to the
+     Rooster, who bows back. No waving — that's salâm. */
+  hi: () => sFloor('#f3e1f7', '#d6b3e0') +
+    sKoo(68, 194, .64, { paws:'together', eyes:'happy', tilt:10 }) +
+    sRooster(162, 170, 2, true) +
+    T(116, 40, 26, '✨'),
+
+  /* khodâhâfez — heading out with her suitcase, waving back at the Cat in
+     the doorway */
+  bye: () => sFloor('#cde9f7', '#9fd37e') +
+    `<rect x="0" y="40" width="70" height="132" fill="#e8c9a0"/>
+     <rect x="12" y="62" width="48" height="110" fill="#5a3a22"/>
+     <path d="M60 62 L78 72 L78 180 L60 172 Z" fill="#8d5a30"/>` +
+    pCat(36, 176, .38, { wave:true }) +
+    sKoo(132, 194, .6, { wave:true, flip:true, look:-6 }) +
+    `<rect x="164" y="146" width="32" height="26" rx="5" fill="#c0503c"/>
+     <path d="M174 146 v-7 h12 v7" stroke="#7a2e22" stroke-width="3.5" fill="none"/>
+     <rect x="164" y="156" width="32" height="4" fill="#7a2e22"/>`,
+
+  /* shab bekheyr — tucked up in bed, nightcap on, eyes heavy, still waving:
+     it's the saying-goodnight, not the sleeping */
+  goodnight: () => `<rect width="200" height="200" fill="#2f3a6b"/>
+    <path d="M28 18 a14 14 0 1 0 12 23 a11 11 0 1 1 -12 -23 Z" fill="#ffe59a"/>
+    <circle cx="62" cy="22" r="2" fill="#fff"/><circle cx="16" cy="58" r="1.6" fill="#fff"/>
+    <rect x="8" y="78" width="184" height="122" rx="18" fill="#8d5a30"/>
+    <ellipse cx="104" cy="106" rx="76" ry="22" fill="#fff"/>
+    ${sKoo(108, 178, .64, { eyes:'shut', hat:'night', wave:true, flip:true })}
+    <path d="M0 162 Q100 148 200 162 L200 200 L0 200 Z" fill="#ff8fab"/>
+    <path d="M0 162 Q100 148 200 162" stroke="#fff" stroke-width="6" fill="none"/>
+    ${T(172, 46, 24, 'z', 'font-weight="800" fill="#cfd6ff"')}${T(186, 26, 17, 'z', 'font-weight="800" fill="#cfd6ff" opacity=".7"')}`,
+
+  /* chetori? — she asks the Cat how he is: which face is it today? */
+  howAreYou: () => sFloor('#fde9c8', '#e5c08a') +
+    sBubble(6, 6, 132, 52, 50, 82, T(30, 32, 26, '😄') + T(62, 32, 26, '😐') + T(94, 32, 26, '😢') +
+      T(122, 32, 30, '?', 'font-weight="900" fill="#e0503f"')) +
+    sKoo(56, 196, .6, { look:6 }) +
+    pCat(150, 196, .56),
+
+  /* khoobi? — the yes-or-no version: are you well? */
+  areYouWell: () => sFloor('#fde9c8', '#e5c08a') +
+    sBubble(10, 6, 96, 52, 50, 82, T(44, 32, 30, '👍') + T(82, 32, 30, '?', 'font-weight="900" fill="#e0503f"')) +
+    sKoo(56, 196, .6, { look:6 }) +
+    pCat(150, 196, .56),
+
+  /* khoobam — the answer: she's good, beaming, thumb up */
+  imGood: () => sFloor('#d9f4dc', '#9fd37e') +
+    sKoo(88, 196, .8, { eyes:'happy', thumb:true }) +
+    T(26, 48, 24, '✨') + T(184, 40, 20, '✨') + T(184, 150, 18, '✨'),
+
+  /* mersi — the Cat brings her a carrot; paws together, heart: thank you */
+  thanks: () => sFloor('#fff1d6', '#e5c08a') +
+    sKoo(52, 196, .62, { paws:'together', eyes:'happy', tilt:6 }) +
+    pCat(156, 196, .56, { hold:true }) +
+    T(108, 128, 40, '🥕') + sHeart(66, 30, 1.8),
+
+  /* bale — the Cat offers an apple; she nods. The Cat's offer is the
+     question; the green tick and the nod are the yes. */
+  yes: () => sFloor('#e4f6e0', '#a9d68c') +
+    pCat(156, 196, .56, { hold:true }) +
+    sKoo(52, 196, .62, { eyes:'happy', cls:'a-nod' }) + T(110, 130, 40, '🍎') +
+    `<circle cx="58" cy="30" r="22" fill="#3fb36b"/>
+     <path d="M47 30 l8 8 l14 -16" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+     <path d="M16 62 v20 M100 62 v20" stroke="#6b4ea8" stroke-width="4" stroke-linecap="round" opacity=".6"/>`,
+
+  /* na — the same offer, but an onion; she wags a finger at it */
+  no: () => sFloor('#fde4e1', '#e2b0a6') +
+    pCat(164, 196, .56, { hold:true }) +
+    sKoo(42, 196, .62, { eyes:'shut', finger:true }) + T(132, 142, 30, '🧅') +
+    `<circle cx="58" cy="30" r="22" fill="#e0503f"/>
+     <path d="M48 20 l20 20 M68 20 l-20 20" stroke="#fff" stroke-width="6" stroke-linecap="round"/>`,
+
+  /* dooset dâram — cuddled up with the Cat, hearts floating up */
+  love: () => sFloor('#ffe3ee', '#f5b8cc') +
+    pCat(132, 196, .6) +
+    sKoo(72, 196, .66, { eyes:'happy', tilt:-8 }) +
+    sHeart(104, 40, 2.2, '#ff5d8f', 'a-rise') +
+    sHeart(60, 26, 1.4, '#ff8fb0', 'a-rise d1') +
+    sHeart(150, 20, 1.6, '#ff8fb0', 'a-rise d2'),
+
+  /* ki? — someone is knocking; she looks at the door and wonders who */
+  who: () => sFloor('#f6e3c3', '#c99a63') +
+    `<rect x="136" y="28" width="64" height="146" fill="#8d5a30" stroke="#6f4526" stroke-width="4"/>
+     <rect x="148" y="42" width="40" height="44" rx="3" fill="#6f4526"/>
+     <rect x="148" y="96" width="40" height="62" rx="3" fill="#6f4526"/>
+     <circle cx="146" cy="112" r="4.5" fill="#ffd86b"/>
+     <path d="M124 76 q-8 12 0 24 M113 68 q-13 20 0 40" stroke="#6b4ea8" stroke-width="4.5" fill="none" stroke-linecap="round"/>` +
+    sKoo(58, 196, .64, { look:7 }) +
+    `<ellipse cx="54" cy="34" rx="48" ry="30" fill="#fff"/>
+     <circle cx="98" cy="62" r="6" fill="#fff"/><circle cx="106" cy="74" r="4" fill="#fff"/>
+     <circle cx="40" cy="26" r="10" fill="#9aa0ad"/><path d="M23 56 q17 -28 34 0 Z" fill="#9aa0ad"/>` +
+    T(76, 36, 40, '?', 'font-weight="900" fill="#e0503f"'),
+};
+function picSVG(p) {
+  return `<svg class="pic" viewBox="0 0 200 200">${PICS[p.pic]()}</svg>`;
+}
 
 const SCENES = {
   /* the three friends at home in the forest */
